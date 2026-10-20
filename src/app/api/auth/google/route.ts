@@ -17,13 +17,24 @@ export async function POST(req: Request) {
   let profile;
   try {
     profile = await verifyGoogleIdToken(body.data.credential);
-  } catch {
+  } catch (err) {
+    console.error('Google token verification failed:', err instanceof Error ? err.message : err);
     return error('Google sign-in failed. Please try again.', 401);
   }
   if (!profile.sub || !profile.email || !profile.emailVerified) {
     return error('Your Google account email is not verified', 401);
   }
 
+  try {
+    return await signInWithGoogle(profile);
+  } catch (err) {
+    // Shows the real cause in Vercel → Logs (e.g. MongoDB network access, AUTH_SECRET).
+    console.error('Google sign-in error:', err instanceof Error ? err.message : err);
+    return error('Sign-in failed on our side. Please try again in a minute.', 500);
+  }
+}
+
+async function signInWithGoogle(profile: Awaited<ReturnType<typeof verifyGoogleIdToken>>) {
   await connectDB();
   let user = await User.findOne({ googleId: profile.sub });
   if (!user) {

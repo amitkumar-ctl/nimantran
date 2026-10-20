@@ -14,7 +14,8 @@ export default function DashboardLayout({ children }: LayoutProps<'/dashboard'>)
       <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
         <div className="container-page flex h-16 items-center justify-between gap-3">
           <div className="flex items-center gap-4">
-            <Logo />
+            {/* Inside the app, the logo goes to the couple's invites */}
+            <Logo href="/dashboard" />
             <Link href="/dashboard" className="btn btn-ghost btn-sm hidden sm:inline-flex">My invites</Link>
           </div>
           <UserMenu />

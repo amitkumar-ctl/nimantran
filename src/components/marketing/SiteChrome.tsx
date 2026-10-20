@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Logo } from '@/components/ui/Logo';
 import { site } from '@/config/site';
 import { TEMPLATE_IDS, TEMPLATES } from '@/lib/themes';
+import { HeaderAuth, MobileLoginChip } from './HeaderAuth';
 
 const NAV = [
   { href: '/templates', label: 'Templates' },
@@ -20,8 +21,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <Link href="/login" className="btn btn-ghost btn-sm hidden sm:inline-flex">Log in</Link>
-          <Link href="/signup" className="btn btn-primary btn-sm">Create free invite</Link>
+          <HeaderAuth />
         </div>
       </div>
       {/* Mobile: section links in a scrollable row */}
@@ -29,7 +29,7 @@ export function SiteHeader() {
         {NAV.map((n) => (
           <Link key={n.href} href={n.href} className="chip shrink-0 bg-white text-xs">{n.label}</Link>
         ))}
-        <Link href="/login" className="chip shrink-0 bg-white text-xs sm:hidden">Log in</Link>
+        <MobileLoginChip />
       </nav>
     </header>
   );
