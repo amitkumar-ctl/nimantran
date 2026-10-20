@@ -1,14 +1,26 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { Minus, Plus, Check, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Minus, Plus, Check, Loader2, Pencil, Users } from 'lucide-react';
 import { rsvpSchema, fieldErrors, type RsvpInput } from '@/lib/validation';
 
 type Props = { slug: string; events: string[]; preview?: boolean };
+type SavedRsvp = Omit<RsvpInput, 'website'> & { updatedAt: string };
+type MyRsvp = { isOwner: boolean; inviteId?: string; rsvp: SavedRsvp | null };
 
-async function submitRsvp(slug: string, data: RsvpInput) {
-  const res = await fetch(`/api/public/invites/${slug}/rsvp`, {
+const endpoint = (slug: string) => `/api/public/invites/${slug}/rsvp`;
+const myRsvpKey = (slug: string) => ['my-rsvp', slug] as const;
+
+async function fetchMyRsvp(slug: string): Promise<MyRsvp> {
+  const res = await fetch(endpoint(slug), { cache: 'no-store' });
+  if (!res.ok) return { isOwner: false, rsvp: null }; // fall back to a fresh form
+  return res.json();
+}
+
+async function submitRsvp(slug: string, data: RsvpInput): Promise<{ updated: boolean }> {
+  const res = await fetch(endpoint(slug), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -18,14 +30,106 @@ async function submitRsvp(slug: string, data: RsvpInput) {
   return body;
 }
 
+/**
+ * RSVP area of the invite. Decides what this visitor sees:
+ *  - the host (logged in as the invite's owner): a note + link to the guest list
+ *  - a guest who already replied on this device: their reply + "Edit response"
+ *  - everyone else: the RSVP form
+ */
 export function RsvpForm({ slug, events, preview = false }: Props) {
-  const [form, setForm] = useState<RsvpInput>({
-    name: '', phone: '', attending: true, guests: 1, events, dietary: '', message: '', website: '',
-  });
+  if (preview) return <RsvpFields slug={slug} events={events} preview initial={blank(events)} onSaved={() => {}} />;
+  return <LiveRsvp slug={slug} events={events} />;
+}
+
+const blank = (events: string[]): RsvpInput => ({
+  name: '', phone: '', attending: true, guests: 1, events, dietary: '', message: '', website: '',
+});
+
+function LiveRsvp({ slug, events }: { slug: string; events: string[] }) {
+  const qc = useQueryClient();
+  const { data, isPending } = useQuery({ queryKey: myRsvpKey(slug), queryFn: () => fetchMyRsvp(slug), retry: false });
+  const [editing, setEditing] = useState(false);
+  const [justSaved, setJustSaved] = useState<'new' | 'updated' | null>(null);
+
+  if (isPending) return <div className="card h-72 animate-pulse" aria-busy="true" aria-label="Loading RSVP" />;
+
+  if (data?.isOwner) {
+    return (
+      <div className="card p-6 text-center sm:p-8" role="note">
+        <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-cream-2 text-inv-primary"><Users className="h-7 w-7" /></div>
+        <p className="font-display text-2xl font-semibold text-inv-heading">This is your invitation 👋</p>
+        <p className="mx-auto mt-1 max-w-xs text-sm text-muted">Guests see the RSVP form here. Hosts can&apos;t RSVP to their own invite. Track every reply in your guest list.</p>
+        <Link href={`/dashboard/invites/${data.inviteId}/guests`} className="btn btn-primary mt-5">View guest list</Link>
+      </div>
+    );
+  }
+
+  const saved = data?.rsvp ?? null;
+  if (saved && !editing) {
+    return <RsvpSummary rsvp={saved} justSaved={justSaved} onEdit={() => { setJustSaved(null); setEditing(true); }} />;
+  }
+
+  return (
+    <RsvpFields
+      key={saved?.updatedAt ?? 'new'}
+      slug={slug}
+      events={events}
+      initial={saved ? { ...saved, website: '' } : blank(events)}
+      isUpdate={!!saved}
+      onCancel={saved ? () => setEditing(false) : undefined}
+      onSaved={(sent, updated) => {
+        qc.setQueryData<MyRsvp>(myRsvpKey(slug), { isOwner: false, rsvp: { ...sent, updatedAt: new Date().toISOString() } });
+        setJustSaved(updated ? 'updated' : 'new');
+        setEditing(false);
+      }}
+    />
+  );
+}
+
+function RsvpSummary({ rsvp, justSaved, onEdit }: { rsvp: SavedRsvp; justSaved: 'new' | 'updated' | null; onEdit: () => void }) {
+  const title = justSaved === 'updated'
+    ? 'Your response is updated ✓'
+    : justSaved === 'new'
+      ? (rsvp.attending ? 'Thank you! See you there 🎉' : 'Thank you for letting us know 🙏')
+      : 'You’ve already responded ✓';
+  return (
+    <div className="card animate-fade-up p-6 text-center sm:p-8" role="status">
+      <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-cream-2 text-inv-primary"><Check className="h-7 w-7" /></div>
+      <p className="font-display text-2xl font-semibold text-inv-heading">{title}</p>
+      <dl className="mx-auto mt-4 max-w-xs space-y-1 text-left text-sm">
+        <div className="flex justify-between gap-3"><dt className="text-muted">Name</dt><dd className="font-semibold">{rsvp.name}</dd></div>
+        <div className="flex justify-between gap-3"><dt className="text-muted">Attending</dt><dd className="font-semibold">{rsvp.attending ? `Yes · ${rsvp.guests} ${rsvp.guests === 1 ? 'person' : 'people'}` : 'No'}</dd></div>
+        {rsvp.attending && rsvp.events.length > 0 && (
+          <div className="flex justify-between gap-3"><dt className="text-muted">Functions</dt><dd className="text-right font-semibold">{rsvp.events.join(', ')}</dd></div>
+        )}
+      </dl>
+      <button type="button" onClick={onEdit} className="btn btn-outline mt-5"><Pencil className="h-4 w-4" /> Edit response</button>
+      <p className="mt-2 text-xs text-muted">Plans changed? You can update your reply anytime.</p>
+    </div>
+  );
+}
+
+type FieldsProps = {
+  slug: string;
+  events: string[];
+  initial: RsvpInput;
+  preview?: boolean;
+  isUpdate?: boolean;
+  onCancel?: () => void;
+  onSaved: (sent: Omit<RsvpInput, 'website'>, updated: boolean) => void;
+};
+
+function RsvpFields({ slug, events, initial, preview = false, isUpdate = false, onCancel, onSaved }: FieldsProps) {
+  const [form, setForm] = useState<RsvpInput>(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const mutation = useMutation({
     mutationFn: (data: RsvpInput) => submitRsvp(slug, data),
+    onSuccess: (res, sent) => {
+      const { website: _w, ...rest } = sent;
+      void _w;
+      onSaved({ ...rest, guests: rest.attending ? rest.guests : 1, events: rest.attending ? rest.events : [] }, res.updated);
+    },
     onError: (err: Error & { fields?: Record<string, string> }) => setErrors(err.fields ?? {}),
   });
 
@@ -42,22 +146,9 @@ export function RsvpForm({ slug, events, preview = false }: Props) {
     mutation.mutate(parsed.data);
   }
 
-  if (mutation.isSuccess) {
-    return (
-      <div className="card animate-fade-up p-8 text-center" role="status">
-        <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-cream-2 text-inv-primary">
-          <Check className="h-7 w-7" />
-        </div>
-        <p className="font-display text-2xl font-semibold text-inv-heading">
-          {form.attending ? 'Thank you! See you there 🎉' : 'Thank you for letting us know 🙏'}
-        </p>
-        <p className="mt-1 text-sm text-muted">Your response has been sent to the couple.</p>
-      </div>
-    );
-  }
-
   return (
     <form onSubmit={onSubmit} className="card space-y-5 p-5 sm:p-6" noValidate>
+      {isUpdate && <p className="rounded-lg bg-cream-2 px-3 py-2 text-sm text-inv-heading">Editing your response. Change anything and press <b>Update RSVP</b>.</p>}
       <div>
         <label htmlFor="rsvp-name" className="label">Your name</label>
         <input id="rsvp-name" className="input" autoComplete="name" value={form.name} onChange={(e) => set('name', e.target.value)} aria-invalid={!!errors.name} placeholder="e.g. Rohan Sharma" />
@@ -131,8 +222,9 @@ export function RsvpForm({ slug, events, preview = false }: Props) {
       )}
 
       <button type="submit" disabled={mutation.isPending || preview} className="btn w-full bg-inv-primary py-3.5 text-[15px] text-white shadow-lg">
-        {mutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending…</> : 'Send RSVP 💌'}
+        {mutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending…</> : isUpdate ? 'Update RSVP' : 'Send RSVP 💌'}
       </button>
+      {onCancel && <button type="button" onClick={onCancel} className="btn btn-ghost w-full">Cancel</button>}
       {preview && <p className="text-center text-xs text-muted">Preview: guests fill this in on your invite link.</p>}
     </form>
   );

@@ -10,6 +10,9 @@ const rsvpSchema = new Schema(
     events: { type: [String], default: [] },
     dietary: { type: String, default: '' },
     message: { type: String, default: '' },
+    // sha256 of the guest's private edit key (the key itself lives only in
+    // the guest's browser cookie), so they can update instead of re-submitting.
+    editTokenHash: { type: String, select: false, index: { sparse: true } },
   },
   { timestamps: true },
 );

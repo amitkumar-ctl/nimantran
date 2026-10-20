@@ -1,8 +1,14 @@
+import { createHash, randomBytes } from 'node:crypto';
+import type { Types } from 'mongoose';
+import { cookies } from 'next/headers';
 import { connectDB } from '@/lib/db';
 import { Invite } from '@/lib/models/Invite';
 import { Rsvp } from '@/lib/models/Rsvp';
+import { getSession } from '@/lib/auth/session';
 import { error, json, parseBody } from '@/lib/api-helpers';
-import { rsvpSchema } from '@/lib/validation';
+import { rsvpSchema, type RsvpInput } from '@/lib/validation';
+
+type Ctx = RouteContext<'/api/public/invites/[slug]/rsvp'>;
 
 // Simple per-instance limiter: max 10 RSVPs per IP per 10 minutes.
 // (Use a shared store such as Upstash Redis when running many instances.)
@@ -16,8 +22,49 @@ function rateLimited(ip: string) {
   return recent.length > 10;
 }
 
-// POST /api/public/invites/:slug/rsvp: guests respond (no login needed)
-export async function POST(req: Request, ctx: RouteContext<'/api/public/invites/[slug]/rsvp'>) {
+// Each guest's browser gets a private random "edit key" for this invite. The
+// cookie is httpOnly and only sent to this endpoint; the DB stores its hash.
+const cookieName = (slug: string) => `nm_rsvp_${slug}`.slice(0, 120);
+const cookiePath = (slug: string) => `/api/public/invites/${slug}/rsvp`;
+const hash = (t: string) => createHash('sha256').update(t).digest('hex');
+
+async function loadInvite(slug: string) {
+  await connectDB();
+  return Invite.findOne({ slug, published: true }, { _id: 1, owner: 1, events: 1 }).lean();
+}
+
+async function isOwner(ownerId: unknown) {
+  const session = await getSession();
+  return !!session && String(ownerId) === session.userId;
+}
+
+async function findMyRsvp(slug: string, inviteId: Types.ObjectId) {
+  const token = (await cookies()).get(cookieName(slug))?.value;
+  if (!token || token.length < 20) return null;
+  return Rsvp.findOne({ invite: inviteId, editTokenHash: hash(token) });
+}
+
+const toInput = (r: { name: string; phone?: string; attending: boolean; guests?: number; events?: string[]; dietary?: string; message?: string }): Omit<RsvpInput, 'website'> => ({
+  name: r.name, phone: r.phone ?? '', attending: r.attending, guests: Math.max(1, r.guests ?? 1),
+  events: r.events ?? [], dietary: r.dietary ?? '', message: r.message ?? '',
+});
+
+// GET: what should this visitor see? { isOwner, rsvp }
+export async function GET(_req: Request, ctx: Ctx) {
+  const { slug } = await ctx.params;
+  const invite = await loadInvite(slug);
+  if (!invite) return error('This invitation is no longer available', 404);
+
+  const owner = await isOwner(invite.owner);
+  const mine = owner ? null : await findMyRsvp(slug, invite._id);
+  return json(
+    { isOwner: owner, inviteId: owner ? String(invite._id) : undefined, rsvp: mine ? { ...toInput(mine), updatedAt: (mine.updatedAt as Date).toISOString() } : null },
+    { headers: { 'Cache-Control': 'private, no-store' } },
+  );
+}
+
+// POST: create the guest's RSVP, or update it if this browser already responded.
+export async function POST(req: Request, ctx: Ctx) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
   if (rateLimited(ip)) return error('Too many responses — please try again in a few minutes', 429);
 
@@ -26,17 +73,35 @@ export async function POST(req: Request, ctx: RouteContext<'/api/public/invites/
   const { website, ...rsvp } = body.data;
   if (website) return json({ ok: true }); // bot filled the honeypot: pretend success
 
-  await connectDB();
   const { slug } = await ctx.params;
-  const invite = await Invite.findOne({ slug, published: true }, { _id: 1, events: 1, rsvpDeadline: 1 }).lean();
+  const invite = await loadInvite(slug);
   if (!invite) return error('This invitation is no longer available', 404);
+  if (await isOwner(invite.owner)) {
+    return error('This is your own invitation. Guests RSVP here; you can see their replies in your guest list.', 403);
+  }
 
   const validEvents = new Set((invite.events ?? []).map((e) => e.name));
-  await Rsvp.create({
+  const data = {
     ...rsvp,
-    invite: invite._id,
     guests: rsvp.attending ? rsvp.guests : 0,
     events: rsvp.attending ? rsvp.events.filter((e) => validEvents.has(e)) : [],
+  };
+
+  const existing = await findMyRsvp(slug, invite._id);
+  if (existing) {
+    existing.set(data);
+    await existing.save();
+    return json({ ok: true, updated: true });
+  }
+
+  const token = randomBytes(32).toString('base64url');
+  await Rsvp.create({ ...data, invite: invite._id, editTokenHash: hash(token) });
+  (await cookies()).set(cookieName(slug), token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: cookiePath(slug),
+    maxAge: 60 * 60 * 24 * 365,
   });
-  return json({ ok: true }, 201);
+  return json({ ok: true, updated: false }, 201);
 }
