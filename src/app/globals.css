@@ -1,0 +1,87 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   The only stylesheet in the app. Tailwind v4 + design tokens + a few
+   reusable component classes. Invite designs override the --color-inv-*
+   variables, so the same markup renders every template.
+   ─────────────────────────────────────────────────────────────────────────── */
+@import 'tailwindcss';
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-cormorant), Georgia, serif;
+  --font-script: var(--font-vibes), cursive;
+  --font-hindi: var(--font-tiro), serif;
+}
+
+@theme {
+  --color-ink: #2b1d14;
+  --color-muted: #7d6a58;
+  --color-line: #eadcc3;
+  --color-cream: #fbf5ea;
+  --color-cream-2: #f4e7cf;
+  --color-maroon: #6b0f1a;
+  --color-maroon-600: #8a1726;
+  --color-maroon-900: #3d0710;
+  --color-gold: #c9a24b;
+  --color-gold-200: #e8cf8a;
+
+  /* Invite design tokens (defaults = Royal Maroon; see src/lib/themes.ts) */
+  --color-inv-hero-from: #8a1726;
+  --color-inv-hero-via: #6b0f1a;
+  --color-inv-hero-to: #3d0710;
+  --color-inv-hero-text: #fbf5ea;
+  --color-inv-accent: #e8cf8a;
+  --color-inv-primary: #6b0f1a;
+  --color-inv-surface: #fbf5ea;
+  --color-inv-card: #ffffff;
+  --color-inv-heading: #3d0710;
+  --color-inv-chip: rgba(0, 0, 0, 0.18);
+
+  --animate-fade-up: fade-up 0.7s ease-out both;
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+/* Invite designs set the --color-inv-* variables inline from src/lib/themes.ts
+   (one source of truth for colours, ornaments and frames). */
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
+@layer base {
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body { @apply bg-cream font-sans text-ink antialiased; }
+  ::selection { @apply bg-gold-200 text-maroon-900; }
+  :focus-visible { @apply outline-2 outline-offset-2 outline-gold; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
+}
+
+/* ── Reusable components ─────────────────────────────────────────────────
+   Buttons compose: className="btn btn-primary" (btn = shape, btn-* = colour). */
+@layer components {
+  .container-page { @apply mx-auto w-full max-w-6xl px-4 sm:px-6; }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold
+      transition active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60;
+  }
+  .btn-primary { @apply bg-maroon text-white shadow-lg shadow-maroon/20 hover:bg-maroon-600; }
+  .btn-outline { @apply border border-line bg-white text-ink hover:border-gold; }
+  .btn-ghost { @apply text-muted hover:bg-cream-2 hover:text-ink; }
+  .btn-sm { @apply px-3 py-2 text-xs; }
+
+  .label { @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted; }
+  .input {
+    @apply w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-[15px] text-ink
+      placeholder:text-muted/60 transition focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30;
+  }
+  .card { @apply rounded-2xl border border-line bg-white shadow-[0_6px_24px_rgba(107,15,26,0.06)]; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full border border-line px-3 py-1.5 text-sm transition; }
+  .chip-on { @apply border-gold bg-cream-2 font-semibold text-maroon-900; }
+
+  .prose-page h2 { @apply mt-12 mb-3 font-display text-3xl font-semibold text-maroon-900; }
+  .prose-page h3 { @apply mt-8 mb-2 font-display text-2xl font-semibold text-maroon-900; }
+  .prose-page p { @apply mb-4 leading-relaxed text-ink/90; }
+  .prose-page ul { @apply mb-4 list-disc space-y-1 pl-6 text-ink/90; }
+}

@@ -1,0 +1,135 @@
+import type { ReactNode } from 'react';
+import { MapPin } from 'lucide-react';
+import type { InviteData } from '@/lib/types';
+import { formatHeroDate, formatLongDate, formatShortDate, mapsSearchUrl } from '@/lib/format';
+import { Countdown } from './Countdown';
+import { Divider } from './Mandala';
+import { Crest, HeroFrame, initialsOf } from './Ornaments';
+import { isTheme, TEMPLATES, themeVars } from '@/lib/themes';
+
+const EVENT_TINTS = ['#fdf1c7', '#e3f2df', '#f6e1ec', '#f9dede', '#e4e6f7', '#e6f3f7', '#f3eadf'];
+
+type Props = {
+  invite: InviteData;
+  /** RSVP area: the live form on the public page, a preview in the editor. */
+  rsvpSlot?: ReactNode;
+  shagunSlot?: ReactNode;
+  /** Editor preview renders inside a phone frame instead of the full viewport. */
+  framed?: boolean;
+};
+
+/**
+ * Presentational invite, shared by the public page (server-rendered, so
+ * crawlers and WhatsApp previews see real HTML) and the editor's live preview.
+ */
+export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Props) {
+  const hero = framed ? 'min-h-[640px]' : 'min-h-dvh';
+  // Previews (editor, marketing mock-ups) use neutral tags so the host page
+  // keeps a single <h1> and a clean heading outline for SEO.
+  const H1 = framed ? 'p' : 'h1';
+  const H2 = framed ? 'p' : 'h2';
+  const H3 = framed ? 'p' : 'h3';
+  const theme = isTheme(invite.theme) ? invite.theme : 'royal';
+  const design = TEMPLATES[theme];
+  const hindiBlessing = /[\u0900-\u097F]/.test(invite.blessing);
+  // Long names shrink so they stay inside the border on small phones.
+  const longest = Math.max(invite.partner1.length, invite.partner2.length);
+  const nameSize = longest > 11 ? 'text-[38px] sm:text-[64px]' : longest > 7 ? 'text-[46px] sm:text-[76px]' : 'text-[54px] sm:text-[84px]';
+  return (
+    <div style={themeVars(theme)} className="bg-inv-surface text-ink">
+      {/* ── Hero ─────────────────────────────────────────────────────── */}
+      <header
+        className={`relative flex ${hero} flex-col items-center justify-center overflow-hidden px-6 text-center text-inv-hero-text ${design.frame === 'arch' ? 'pt-24 pb-12 sm:pt-28' : 'py-12 sm:py-16'}`}
+        style={{
+          background:
+            'radial-gradient(120% 80% at 50% 0%, var(--color-inv-hero-from) 0%, var(--color-inv-hero-via) 45%, var(--color-inv-hero-to) 100%)',
+        }}
+      >
+        <HeroFrame frame={design.frame} />
+
+        <Crest ornament={design.ornament} initials={initialsOf(invite.partner1, invite.partner2)} className="relative mb-2 h-24 w-24 animate-fade-up text-inv-accent sm:h-36 sm:w-36" />
+        {invite.blessing && (
+          <p lang={hindiBlessing ? 'hi' : undefined}
+            className={`relative mb-4 tracking-wide text-inv-accent sm:mb-6 ${hindiBlessing ? 'font-hindi text-xl sm:text-[22px]' : 'font-display text-xl font-semibold uppercase tracking-[0.2em] sm:text-2xl'}`}>
+            {invite.blessing}
+          </p>
+        )}
+        {invite.message && (
+          <p className="max-w-sm font-display text-base italic leading-relaxed opacity-90 sm:text-lg">{invite.message}</p>
+        )}
+
+        <H1 className={`mt-3 mb-1 font-script leading-[1.05] text-inv-accent ${nameSize} ${design.dark ? 'drop-shadow-[0_2px_18px_rgba(0,0,0,0.35)]' : ''}`}>
+          {invite.partner1}
+          <span className="block text-[34px] opacity-90 sm:text-5xl">&amp;</span>
+          {invite.partner2}
+        </H1>
+
+        <p className="mt-3 font-display text-lg font-semibold uppercase sm:text-xl tracking-[0.18em]">
+          <time dateTime={invite.weddingDate}>{formatHeroDate(invite.weddingDate)}</time>
+        </p>
+        {(invite.venue || invite.city) && (
+          <p className="mt-1 font-display text-lg opacity-85">{invite.venue || invite.city}</p>
+        )}
+
+        <Countdown date={invite.weddingDate} time={invite.weddingTime} />
+        <a href="#celebrations" className="absolute bottom-9 text-xs tracking-[0.2em] opacity-70 transition hover:opacity-100">
+          SCROLL ↓
+        </a>
+      </header>
+
+      {/* ── Functions ─────────────────────────────────────────────────── */}
+      {invite.events.length > 0 && (
+        <section id="celebrations" className="mx-auto max-w-2xl px-5 py-16 sm:px-6 sm:py-20">
+          <H2 className="text-center font-display text-4xl font-semibold text-inv-heading">The Celebrations</H2>
+          <p className="mt-1 mb-5 text-center font-display text-lg italic text-muted">
+            {formatLongDate(invite.events[0].date)}
+            {invite.events.length > 1 && <> – {formatLongDate(invite.events[invite.events.length - 1].date)}</>}
+          </p>
+          <Divider />
+          <ol className="space-y-3">
+            {invite.events.map((ev, i) => {
+              // Falls back to the main venue when a function has no venue of its own.
+              const place = ev.venue || invite.venue;
+              const map = ev.mapUrl || (place ? mapsSearchUrl([place, invite.city].filter(Boolean).join(', ')) : '');
+              return (
+                <li key={ev.id} className="card flex items-center gap-4 p-4">
+                  <span className="grid h-12 w-12 flex-none place-items-center rounded-xl text-2xl" style={{ background: EVENT_TINTS[i % EVENT_TINTS.length] }} aria-hidden="true">
+                    {ev.emoji}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <H3 className="font-display text-[22px] font-semibold leading-tight text-inv-heading">{ev.name}</H3>
+                    <p className="text-[13px] text-muted">
+                      <time dateTime={ev.date}>{formatShortDate(ev.date)}</time>
+                      {ev.time && <> · {ev.time}</>}
+                    </p>
+                    {ev.venue && <p className="truncate text-[13px] text-muted">{ev.venue}</p>}
+                    {ev.note && <p className="mt-0.5 text-xs italic text-inv-primary">{ev.note}</p>}
+                  </div>
+                  {map && (
+                    <a href={map} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm flex-none rounded-full text-inv-primary" aria-label={`Open ${ev.name} venue in Google Maps`}>
+                      <MapPin className="h-3.5 w-3.5" /> Map
+                    </a>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      )}
+
+      {/* ── RSVP + Shagun ─────────────────────────────────────────────── */}
+      {(rsvpSlot || shagunSlot) && (
+        <section id="rsvp" className="bg-gradient-to-b from-inv-surface to-cream-2/70 px-5 py-16 sm:py-20">
+          <div className="mx-auto max-w-md">
+            <H2 className="text-center font-display text-4xl font-semibold text-inv-heading">Will you join us?</H2>
+            {invite.rsvpDeadline && (
+              <p className="mt-1 mb-6 text-center font-display text-lg italic text-muted">Kindly RSVP by {formatLongDate(invite.rsvpDeadline)}</p>
+            )}
+            {rsvpSlot}
+            {shagunSlot}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
