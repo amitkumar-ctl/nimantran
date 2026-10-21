@@ -20,7 +20,7 @@ export async function proxy(req: NextRequest) {
 
   if (!userId && pathname.startsWith('/dashboard')) {
     const url = new URL('/login', req.url);
-    url.searchParams.set('next', pathname);
+    url.searchParams.set('next', pathname + req.nextUrl.search); // keep e.g. ?template=
     const res = NextResponse.redirect(url);
     if (raw) clearSession(res); // expired or tampered: clean up
     return res;

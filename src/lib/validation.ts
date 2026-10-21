@@ -1,9 +1,8 @@
 import { z } from 'zod';
-import { TEMPLATE_IDS, type Theme } from './themes';
+import { DEFAULT_THEME, isTheme, type Theme } from './themes';
 
 // Shared by the API (server-side validation) and the forms (client-side).
 
-export const THEMES = TEMPLATE_IDS;
 export type { Theme };
 
 const trimmed = (max: number) => z.string().trim().max(max);
@@ -20,7 +19,7 @@ export const eventSchema = z.object({
 });
 
 export const inviteContentSchema = z.object({
-  theme: z.enum(THEMES).default('royal'),
+  theme: z.string().max(60).refine(isTheme, 'Pick a design').default(DEFAULT_THEME),
   partner1: trimmed(40).min(1, 'Name is required'),
   partner2: trimmed(40).min(1, 'Name is required'),
   blessing: trimmed(60).default('॥ शुभ विवाह ॥'),

@@ -4,8 +4,8 @@ import type { InviteData } from '@/lib/types';
 import { formatHeroDate, formatLongDate, formatShortDate, mapsSearchUrl } from '@/lib/format';
 import { Countdown } from './Countdown';
 import { Divider } from './Mandala';
-import { Crest, HeroFrame, initialsOf } from './Ornaments';
-import { isTheme, TEMPLATES, themeVars } from '@/lib/themes';
+import { Crest, HeroFrame, initialsOf, nameClass } from './Ornaments';
+import { getTemplate, themeVars } from '@/lib/themes';
 
 const EVENT_TINTS = ['#fdf1c7', '#e3f2df', '#f6e1ec', '#f9dede', '#e4e6f7', '#e6f3f7', '#f3eadf'];
 
@@ -29,17 +29,19 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
   const H1 = framed ? 'p' : 'h1';
   const H2 = framed ? 'p' : 'h2';
   const H3 = framed ? 'p' : 'h3';
-  const theme = isTheme(invite.theme) ? invite.theme : 'royal';
-  const design = TEMPLATES[theme];
+  const design = getTemplate(invite.theme);
+  const theme = design.id;
   const hindiBlessing = /[\u0900-\u097F]/.test(invite.blessing);
   // Long names shrink so they stay inside the border on small phones.
   const longest = Math.max(invite.partner1.length, invite.partner2.length);
-  const nameSize = longest > 11 ? 'text-[38px] sm:text-[64px]' : longest > 7 ? 'text-[46px] sm:text-[76px]' : 'text-[54px] sm:text-[84px]';
+  const nameSize = design.nameStyle === 'serif'
+    ? (longest > 11 ? 'text-[28px] sm:text-[46px]' : longest > 7 ? 'text-[34px] sm:text-[56px]' : 'text-[40px] sm:text-[64px]')
+    : longest > 11 ? 'text-[38px] sm:text-[64px]' : longest > 7 ? 'text-[46px] sm:text-[76px]' : 'text-[54px] sm:text-[84px]';
   return (
     <div style={themeVars(theme)} className="bg-inv-surface text-ink">
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <header
-        className={`relative flex ${hero} flex-col items-center justify-center overflow-hidden px-6 text-center text-inv-hero-text ${design.frame === 'arch' ? 'pt-24 pb-12 sm:pt-28' : 'py-12 sm:py-16'}`}
+        className={`relative flex ${hero} flex-col items-center justify-center overflow-hidden px-6 text-center text-inv-hero-text ${design.frame === 'arch' || design.frame === 'toran' ? 'pt-24 pb-12 sm:pt-28' : 'py-12 sm:py-16'}`}
         style={{
           background:
             'radial-gradient(120% 80% at 50% 0%, var(--color-inv-hero-from) 0%, var(--color-inv-hero-via) 45%, var(--color-inv-hero-to) 100%)',
@@ -58,7 +60,7 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
           <p className="max-w-sm font-display text-base italic leading-relaxed opacity-90 sm:text-lg">{invite.message}</p>
         )}
 
-        <H1 className={`mt-3 mb-1 font-script leading-[1.05] text-inv-accent ${nameSize} ${design.dark ? 'drop-shadow-[0_2px_18px_rgba(0,0,0,0.35)]' : ''}`}>
+        <H1 className={`mt-3 mb-1 ${nameClass(design.nameStyle)} leading-[1.05] text-inv-accent ${nameSize} ${design.dark ? 'drop-shadow-[0_2px_18px_rgba(0,0,0,0.35)]' : ''}`}>
           {invite.partner1}
           <span className="block text-[34px] opacity-90 sm:text-5xl">&amp;</span>
           {invite.partner2}

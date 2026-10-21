@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { CalendarHeart, IndianRupee, MapPin, MessageCircleHeart, Pencil, Share2, Sparkles, Timer, Users } from 'lucide-react';
 import { site, absoluteUrl } from '@/config/site';
-import { TEMPLATE_IDS, TEMPLATES } from '@/lib/themes';
+import { FEATURED_IDS, getTemplate, templateCount } from '@/lib/themes';
 import { ThemeSwatch } from '@/components/invite/ThemeSwatch';
 import { PhonePreview } from '@/components/marketing/PhonePreview';
 import { JsonLd } from '@/components/marketing/JsonLd';
@@ -119,20 +119,20 @@ export default function HomePage() {
       {/* ── Templates ── */}
       <section className="container-page py-16 sm:py-20" aria-labelledby="designs-title">
         <h2 id="designs-title" className="text-center font-display text-4xl font-semibold text-maroon-900 sm:text-5xl">Designs for every ceremony</h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-muted">{TEMPLATE_IDS.length} designs: traditional, regional, pastel and destination. Switch anytime, even after sharing.</p>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-muted">{templateCount().toLocaleString('en-IN')}+ designs: traditional, regional, pastel and destination. Search by colour, tradition or motif, and switch anytime, even after sharing.</p>
         <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {TEMPLATE_IDS.slice(0, 8).map((t) => (
+          {FEATURED_IDS.slice(0, 8).map((t) => (
             <Link key={t} href={`/templates/${t}`} className="card group overflow-hidden transition hover:-translate-y-1">
               <ThemeSwatch theme={t} size="lg" />
               <div className="p-4">
-                <h3 className="font-display text-xl font-semibold text-maroon-900 group-hover:underline">{TEMPLATES[t].name}</h3>
-                <p className="text-sm text-muted">{TEMPLATES[t].tagline}</p>
+                <h3 className="font-display text-xl font-semibold text-maroon-900 group-hover:underline">{getTemplate(t).name}</h3>
+                <p className="text-sm text-muted">{getTemplate(t).tagline}</p>
               </div>
             </Link>
           ))}
         </div>
         <div className="mt-8 text-center">
-          <Link href="/templates" className="btn btn-outline">See all {TEMPLATE_IDS.length} designs</Link>
+          <Link href="/templates" className="btn btn-outline">Search all {templateCount().toLocaleString('en-IN')} designs</Link>
         </div>
       </section>
 
