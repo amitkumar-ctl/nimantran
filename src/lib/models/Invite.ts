@@ -1,5 +1,5 @@
 import { Schema, model, models, type InferSchemaType, type Model } from 'mongoose';
-import { THEMES } from '@/lib/validation';
+import { DEFAULT_THEME, isTheme } from '@/lib/themes';
 
 const eventSchema = new Schema(
   {
@@ -20,7 +20,7 @@ const inviteSchema = new Schema(
     owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     slug: { type: String, required: true, unique: true },
     published: { type: Boolean, default: false },
-    theme: { type: String, enum: THEMES, default: 'royal' },
+    theme: { type: String, default: DEFAULT_THEME, validate: { validator: isTheme, message: 'Unknown design' } },
     partner1: { type: String, required: true },
     partner2: { type: String, required: true },
     blessing: { type: String, default: '॥ शुभ विवाह ॥' },
