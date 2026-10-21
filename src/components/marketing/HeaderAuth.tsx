@@ -10,7 +10,7 @@ import { api, queryKeys } from '@/lib/api-client';
 // visitors never trigger an API call. Server HTML always renders the
 // logged-out buttons; marketing pages stay fully static for SEO.
 const noSubscribe = () => () => {};
-const useLoggedInHint = () =>
+export const useLoggedInHint = () =>
   useSyncExternalStore(noSubscribe, () => document.cookie.split('; ').includes('nm_li=1'), () => false);
 
 function useCurrentUser() {

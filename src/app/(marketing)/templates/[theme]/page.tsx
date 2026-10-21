@@ -8,8 +8,14 @@ import { absoluteUrl } from '@/config/site';
 import { PhonePreview } from '@/components/marketing/PhonePreview';
 import { ThemeSwatch } from '@/components/invite/ThemeSwatch';
 import { JsonLd } from '@/components/marketing/JsonLd';
+import { UseDesignLink } from '@/components/templates/UseDesignLink';
 
 type Props = PageProps<'/templates/[theme]'>;
+
+// The whole page depends on the URL (which design / collection), so render it
+// in one go instead of streaming a generic shell first. This also means an
+// unknown id gets a real 404 status for search engines.
+export const instant = false;
 
 // The featured designs are built as static HTML at build time; the thousands
 // of generated ones render on first visit and are then cached.
@@ -28,7 +34,6 @@ function similar(info: TemplateInfo, n = 8): TemplateInfo[] {
   return [...out.values()];
 }
 
-const signupHref = (id: string) => `/signup?next=${encodeURIComponent(`/dashboard?template=${id}`)}`;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { theme } = await params;
@@ -83,7 +88,7 @@ export default async function TemplatePage({ params }: Props) {
               <li key={f} className="flex items-center gap-2 text-ink/85"><Check className="h-4 w-4 flex-none text-green-700" /> {f}</li>
             ))}
           </ul>
-          <Link href={signupHref(info.id)} className="btn btn-primary mt-8 px-7 py-4 text-base">Use this design, free</Link>
+          <UseDesignLink id={info.id} className="btn btn-primary mt-8 px-7 py-4 text-base">Use this design, free</UseDesignLink>
         </div>
         <PhonePreview theme={theme} />
       </div>
