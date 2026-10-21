@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarHeart, ExternalLink, Loader2, Pencil, Plus, Users } from 'lucide-react';
 import { api, ApiError, queryKeys } from '@/lib/api-client';
@@ -11,6 +10,7 @@ import { DEFAULT_THEME, isTheme, type Theme } from '@/lib/themes';
 import { TemplateBrowser } from '@/components/templates/TemplateBrowser';
 import { ThemeSwatch } from '@/components/invite/ThemeSwatch';
 import { formatLongDate } from '@/lib/format';
+import { goToPage, PageLink } from '@/components/ui/PageLink';
 
 export function DashboardHome() {
   const { data: invites, isPending, isError, error } = useQuery({ queryKey: queryKeys.invites, queryFn: api.listInvites });
@@ -57,8 +57,8 @@ export function DashboardHome() {
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Link href={`/dashboard/invites/${inv.id}`} className="btn btn-outline btn-sm"><Pencil className="h-3.5 w-3.5" /> Edit</Link>
-                  <Link href={`/dashboard/invites/${inv.id}/guests`} className="btn btn-outline btn-sm"><Users className="h-3.5 w-3.5" /> {inv.rsvpCount} RSVPs</Link>
+                  <PageLink href={`/dashboard/invites/${inv.id}`} className="btn btn-outline btn-sm"><Pencil className="h-3.5 w-3.5" /> Edit</PageLink>
+                  <PageLink href={`/dashboard/invites/${inv.id}/guests`} className="btn btn-outline btn-sm"><Users className="h-3.5 w-3.5" /> {inv.rsvpCount} RSVPs</PageLink>
                   {inv.published && (
                     <a href={`/i/${inv.slug}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm"><ExternalLink className="h-3.5 w-3.5" /> View</a>
                   )}
@@ -73,7 +73,6 @@ export function DashboardHome() {
 }
 
 function CreateInviteCard({ initialTheme, onCancel }: { initialTheme: Theme; onCancel?: () => void }) {
-  const router = useRouter();
   const qc = useQueryClient();
   const [form, setForm] = useState({ partner1: '', partner2: '', weddingDate: '', theme: initialTheme });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -83,7 +82,7 @@ function CreateInviteCard({ initialTheme, onCancel }: { initialTheme: Theme; onC
     onSuccess: (invite) => {
       qc.invalidateQueries({ queryKey: queryKeys.invites });
       qc.setQueryData(queryKeys.invite(invite.id), invite);
-      router.push(`/dashboard/invites/${invite.id}`);
+      goToPage(`/dashboard/invites/${invite.id}`); // full load: see PageLink
     },
     onError: (err) => setErrors(err instanceof ApiError && err.fields ? err.fields : {}),
   });

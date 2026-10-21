@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Minus, Plus, Check, Loader2, Pencil, Users } from 'lucide-react';
 import { rsvpSchema, fieldErrors, type RsvpInput } from '@/lib/validation';
+import { PageLink } from '@/components/ui/PageLink';
 
 type Props = { slug: string; events: string[]; preview?: boolean };
 type SavedRsvp = Omit<RsvpInput, 'website'> & { updatedAt: string };
@@ -59,7 +59,7 @@ function LiveRsvp({ slug, events }: { slug: string; events: string[] }) {
         <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-cream-2 text-inv-primary"><Users className="h-7 w-7" /></div>
         <p className="font-display text-2xl font-semibold text-inv-heading">This is your invitation 👋</p>
         <p className="mx-auto mt-1 max-w-xs text-sm text-muted">Guests see the RSVP form here. Hosts can&apos;t RSVP to their own invite. Track every reply in your guest list.</p>
-        <Link href={`/dashboard/invites/${data.inviteId}/guests`} className="btn btn-primary mt-5">View guest list</Link>
+        <PageLink href={`/dashboard/invites/${data.inviteId}/guests`} className="btn btn-primary mt-5">View guest list</PageLink>
       </div>
     );
   }
