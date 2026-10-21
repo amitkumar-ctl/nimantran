@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarHeart, ExternalLink, Loader2, Pencil, Plus, Users } from 'lucide-react';
 import { api, ApiError, queryKeys } from '@/lib/api-client';
@@ -14,10 +14,13 @@ import { formatLongDate } from '@/lib/format';
 
 export function DashboardHome() {
   const { data: invites, isPending, isError, error } = useQuery({ queryKey: queryKeys.invites, queryFn: api.listInvites });
-  // Arriving from "Use this design" (/dashboard?template=…) opens the create form.
-  // This component only renders the form after the client query resolves, so
-  // reading the URL here can't cause a hydration mismatch.
-  const [showCreate, setShowCreate] = useState(() => !!templateFromUrl());
+  // Arriving from "Use this design" (/dashboard?template=…) opens the create
+  // form with that design picked, even when the user already has invites.
+  const raw = useSearchParams().get('template');
+  const template = raw && isTheme(raw) ? raw : null;
+  const [mode, setMode] = useState<'auto' | 'open' | 'closed'>('auto');
+  const showCreate = mode === 'open' || (mode === 'auto' && !!template);
+  const setShowCreate = (open: boolean) => setMode(open ? 'open' : 'closed');
   const hasInvites = (invites?.length ?? 0) > 0;
 
   return (
@@ -38,7 +41,7 @@ export function DashboardHome() {
       {isError && <p className="card p-6 text-red-800" role="alert">{error.message}</p>}
 
       {!isPending && !isError && (!hasInvites || showCreate) && (
-        <CreateInviteCard onCancel={hasInvites ? () => setShowCreate(false) : undefined} />
+        <CreateInviteCard key={template ?? 'default'} initialTheme={template ?? DEFAULT_THEME} onCancel={hasInvites ? () => setShowCreate(false) : undefined} />
       )}
 
       {hasInvites && (
@@ -69,10 +72,10 @@ export function DashboardHome() {
   );
 }
 
-function CreateInviteCard({ onCancel }: { onCancel?: () => void }) {
+function CreateInviteCard({ initialTheme, onCancel }: { initialTheme: Theme; onCancel?: () => void }) {
   const router = useRouter();
   const qc = useQueryClient();
-  const [form, setForm] = useState({ partner1: '', partner2: '', weddingDate: '', theme: (templateFromUrl() ?? DEFAULT_THEME) as Theme });
+  const [form, setForm] = useState({ partner1: '', partner2: '', weddingDate: '', theme: initialTheme });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const create = useMutation({
@@ -132,10 +135,4 @@ function CreateInviteCard({ onCancel }: { onCancel?: () => void }) {
       </div>
     </form>
   );
-}
-
-function templateFromUrl(): Theme | null {
-  if (typeof window === 'undefined') return null;
-  const t = new URLSearchParams(window.location.search).get('template');
-  return t && isTheme(t) ? t : null;
 }
