@@ -6,14 +6,18 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarHeart, ExternalLink, Loader2, Pencil, Plus, Users } from 'lucide-react';
 import { api, ApiError, queryKeys } from '@/lib/api-client';
-import { createInviteSchema, fieldErrors, THEMES, type Theme } from '@/lib/validation';
-import { TEMPLATES } from '@/lib/themes';
+import { createInviteSchema, fieldErrors } from '@/lib/validation';
+import { DEFAULT_THEME, isTheme, type Theme } from '@/lib/themes';
+import { TemplateBrowser } from '@/components/templates/TemplateBrowser';
 import { ThemeSwatch } from '@/components/invite/ThemeSwatch';
 import { formatLongDate } from '@/lib/format';
 
 export function DashboardHome() {
   const { data: invites, isPending, isError, error } = useQuery({ queryKey: queryKeys.invites, queryFn: api.listInvites });
-  const [showCreate, setShowCreate] = useState(false);
+  // Arriving from "Use this design" (/dashboard?template=…) opens the create form.
+  // This component only renders the form after the client query resolves, so
+  // reading the URL here can't cause a hydration mismatch.
+  const [showCreate, setShowCreate] = useState(() => !!templateFromUrl());
   const hasInvites = (invites?.length ?? 0) > 0;
 
   return (
@@ -68,7 +72,7 @@ export function DashboardHome() {
 function CreateInviteCard({ onCancel }: { onCancel?: () => void }) {
   const router = useRouter();
   const qc = useQueryClient();
-  const [form, setForm] = useState({ partner1: '', partner2: '', weddingDate: '', theme: 'royal' as Theme });
+  const [form, setForm] = useState({ partner1: '', partner2: '', weddingDate: '', theme: (templateFromUrl() ?? DEFAULT_THEME) as Theme });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const create = useMutation({
@@ -112,18 +116,11 @@ function CreateInviteCard({ onCancel }: { onCancel?: () => void }) {
 
       <fieldset className="mt-6">
         <legend className="label">Choose a design</legend>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {THEMES.map((t) => (
-            <button key={t} type="button" onClick={() => setForm((f) => ({ ...f, theme: t }))} aria-pressed={form.theme === t}
-              className={`overflow-hidden rounded-xl border-2 text-left transition ${form.theme === t ? 'border-maroon shadow-md' : 'border-line hover:border-gold'}`}>
-              <ThemeSwatch theme={t} size="sm" names={form.partner1 && form.partner2 ? [form.partner1, form.partner2] : undefined} />
-              <span className="block bg-white px-3 py-2">
-                <span className="block text-xs font-semibold">{TEMPLATES[t].name}</span>
-                <span className="block text-[11px] text-muted">{TEMPLATES[t].category}</span>
-              </span>
-            </button>
-          ))}
-        </div>
+        <TemplateBrowser
+          mode="pick" className="mt-1" selected={form.theme}
+          onSelect={(theme) => setForm((f) => ({ ...f, theme }))}
+          names={form.partner1 && form.partner2 ? [form.partner1, form.partner2] : undefined}
+        />
       </fieldset>
 
       {create.isError && !Object.keys(errors).length && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">{create.error.message}</p>}
@@ -135,4 +132,10 @@ function CreateInviteCard({ onCancel }: { onCancel?: () => void }) {
       </div>
     </form>
   );
+}
+
+function templateFromUrl(): Theme | null {
+  if (typeof window === 'undefined') return null;
+  const t = new URLSearchParams(window.location.search).get('template');
+  return t && isTheme(t) ? t : null;
 }

@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { Logo } from '@/components/ui/Logo';
 import { site } from '@/config/site';
-import { TEMPLATE_IDS, TEMPLATES } from '@/lib/themes';
+import { FEATURED_IDS, getTemplate, templateCount } from '@/lib/themes';
+import { COLLECTIONS } from '@/lib/templates/collections';
 import { HeaderAuth, MobileLoginChip } from './HeaderAuth';
 
 const NAV = [
@@ -46,10 +47,13 @@ export function SiteFooter() {
         <div>
           <h2 className="mb-3 font-display text-lg font-semibold text-gold-200">Templates</h2>
           <ul className="space-y-2 text-sm">
-            {TEMPLATE_IDS.slice(0, 6).map((t) => (
-              <li key={t}><Link className="hover:text-white" href={`/templates/${t}`}>{TEMPLATES[t].name}</Link></li>
+            {FEATURED_IDS.slice(0, 4).map((t) => (
+              <li key={t}><Link className="hover:text-white" href={`/templates/${t}`}>{getTemplate(t).name}</Link></li>
             ))}
-            <li><Link className="font-semibold text-gold-200 hover:text-white" href="/templates">All {TEMPLATE_IDS.length} designs →</Link></li>
+            {COLLECTIONS.filter((c) => ['red', 'pastel', 'nikah', 'south-indian'].includes(c.slug)).map((c) => (
+              <li key={c.slug}><Link className="hover:text-white" href={`/templates/c/${c.slug}`}>{c.h1}</Link></li>
+            ))}
+            <li><Link className="font-semibold text-gold-200 hover:text-white" href="/templates">All {templateCount().toLocaleString('en-IN')} designs →</Link></li>
           </ul>
         </div>
         <div>

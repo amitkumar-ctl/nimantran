@@ -1,6 +1,6 @@
 import type { InviteData } from './types';
 import type { InviteEvent } from './validation';
-import { TEMPLATES, type EventSet, type Theme } from './themes';
+import { getTemplate, type EventSet, type Theme } from './themes';
 
 // Demo content for template previews and for pre-filling a new invite.
 
@@ -44,12 +44,13 @@ export const EVENT_SETS: Record<EventSet, SampleEvent[]> = {
 };
 
 export function sampleInvite(theme: Theme = 'royal'): InviteData {
-  const s = TEMPLATES[theme].sample;
+  const t = getTemplate(theme);
+  const s = t.sample;
   return {
     id: 'sample',
     slug: `${s.partner1}-weds-${s.partner2}`.toLowerCase(),
     published: true,
-    theme,
+    theme: t.id,
     partner1: s.partner1,
     partner2: s.partner2,
     blessing: s.blessing,
@@ -58,7 +59,7 @@ export function sampleInvite(theme: Theme = 'royal'): InviteData {
     weddingTime: '18:00',
     city: s.city,
     venue: s.venue,
-    events: EVENT_SETS[TEMPLATES[theme].events].map((e) => ({ ...e })),
+    events: EVENT_SETS[t.events].map((e) => ({ ...e })),
     rsvpDeadline: '2026-11-25',
     upiId: '',
     upiName: '',

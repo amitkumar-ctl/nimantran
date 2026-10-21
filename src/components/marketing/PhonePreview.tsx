@@ -1,6 +1,6 @@
 import { InviteView } from '@/components/invite/InviteView';
 import { sampleInvite } from '@/lib/sample';
-import type { Theme } from '@/lib/validation';
+import type { Theme } from '@/lib/themes';
 
 /** Decorative, non-interactive phone mock-up showing a sample invite. */
 export function PhonePreview({ theme = 'royal', className = '' }: { theme?: Theme; className?: string }) {

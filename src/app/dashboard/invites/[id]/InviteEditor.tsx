@@ -6,10 +6,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Check, ChevronDown, ChevronUp, Copy, Eye, Loader2, Pencil, Plus, Rocket, Share2, Trash2, Users } from 'lucide-react';
 import { api, queryKeys } from '@/lib/api-client';
 import { useEditorStore } from '@/stores/editor-store';
-import { fieldErrors, inviteContentSchema, THEMES } from '@/lib/validation';
+import { fieldErrors, inviteContentSchema } from '@/lib/validation';
 import { EVENT_PRESETS } from '@/lib/sample';
-import { TEMPLATES } from '@/lib/themes';
-import { ThemeSwatch } from '@/components/invite/ThemeSwatch';
+import { TemplateBrowser } from '@/components/templates/TemplateBrowser';
 import type { InviteData } from '@/lib/types';
 import { InviteView } from '@/components/invite/InviteView';
 import { RsvpForm } from '@/components/invite/RsvpForm';
@@ -206,15 +205,7 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
       </Section>
 
       <Section title="Design">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-          {THEMES.map((t) => (
-            <button key={t} type="button" onClick={() => update({ theme: t })} aria-pressed={draft.theme === t}
-              className={`overflow-hidden rounded-xl border-2 text-left transition ${draft.theme === t ? 'border-maroon shadow-md' : 'border-line hover:border-gold'}`}>
-              <ThemeSwatch theme={t} size="sm" names={[draft.partner1 || 'A', draft.partner2 || 'B']} />
-              <span className="block bg-white px-2.5 py-2 text-xs font-semibold">{TEMPLATES[t].name}</span>
-            </button>
-          ))}
-        </div>
+        <TemplateBrowser mode="pick" pageSize={8} selected={draft.theme} onSelect={(theme) => update({ theme })} names={[draft.partner1 || 'A', draft.partner2 || 'B']} />
       </Section>
 
       <Section title="Functions" hint="Add every ceremony. Guests can choose which ones they'll attend.">
