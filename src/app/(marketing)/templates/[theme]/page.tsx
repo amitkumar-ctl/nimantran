@@ -9,6 +9,7 @@ import { PhonePreview } from '@/components/marketing/PhonePreview';
 import { ThemeSwatch } from '@/components/invite/ThemeSwatch';
 import { JsonLd } from '@/components/marketing/JsonLd';
 import { UseDesignLink } from '@/components/templates/UseDesignLink';
+import { DesignLink } from '@/components/templates/TemplateBrowser';
 
 type Props = PageProps<'/templates/[theme]'>;
 
@@ -98,13 +99,13 @@ export default async function TemplatePage({ params }: Props) {
         <ul className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {others.map((t) => (
             <li key={t.id}>
-              <Link href={`/templates/${t.id}`} className="card group block overflow-hidden transition hover:-translate-y-0.5">
+              <DesignLink featured={t.featured} href={`/templates/${t.id}`} className="card group block overflow-hidden transition hover:-translate-y-0.5">
                 <ThemeSwatch theme={t.id} />
                 <span className="block p-3">
                   <span className="block font-display text-base font-semibold text-maroon-900 group-hover:underline sm:text-lg">{t.name}</span>
                   <span className="block text-xs text-muted sm:text-sm">{t.category}</span>
                 </span>
-              </Link>
+              </DesignLink>
             </li>
           ))}
         </ul>

@@ -2,6 +2,7 @@
 
 import { useDeferredValue, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { PageLink } from '@/components/ui/PageLink';
 import { Check, Search, SlidersHorizontal, X } from 'lucide-react';
 import {
   CATEGORIES, COLOUR_FAMILIES, getTemplate, searchTemplates, templateCount,
@@ -146,14 +147,19 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
 
 export function BrowseCard({ t }: { t: TemplateInfo }) {
   return (
-    <Link href={`/templates/${t.id}`} className="card group block overflow-hidden transition hover:-translate-y-1">
+    // Prebuilt (featured) designs navigate in-app; generated ones use a normal page load (see PageLink).
+    <DesignLink featured={t.featured} href={`/templates/${t.id}`} className="card group block overflow-hidden transition hover:-translate-y-1">
       <ThemeSwatch theme={t.id} size="lg" />
       <span className="block p-3 sm:p-4">
         <span className="block font-display text-lg leading-snug font-semibold text-maroon-900 group-hover:underline">{t.name}</span>
         <span className="block text-xs text-muted sm:text-sm">{t.featured ? t.tagline : t.category}</span>
       </span>
-    </Link>
+    </DesignLink>
   );
+}
+
+export function DesignLink({ featured, ...props }: { featured: boolean; href: string; className?: string; children: React.ReactNode }) {
+  return featured ? <Link {...props} /> : <PageLink {...props} />;
 }
 
 function PickCard({ t, selected, onSelect, names }: { t: TemplateInfo } & PickProps) {
