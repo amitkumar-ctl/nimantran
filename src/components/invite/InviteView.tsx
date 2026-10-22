@@ -34,14 +34,18 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
   const hindiBlessing = /[\u0900-\u097F]/.test(invite.blessing);
   // Long names shrink so they stay inside the border on small phones.
   const longest = Math.max(invite.partner1.length, invite.partner2.length);
-  const nameSize = design.nameStyle === 'serif'
-    ? (longest > 11 ? 'text-[28px] sm:text-[46px]' : longest > 7 ? 'text-[34px] sm:text-[56px]' : 'text-[40px] sm:text-[64px]')
-    : longest > 11 ? 'text-[38px] sm:text-[64px]' : longest > 7 ? 'text-[46px] sm:text-[76px]' : 'text-[54px] sm:text-[84px]';
+  // Long names step down in size. The phone-frame preview always uses the
+  // phone sizes, even on a wide screen. (Class names are written out in full
+  // so Tailwind can find them.)
+  const tier = longest > 14 ? 3 : longest > 11 ? 2 : longest > 7 ? 1 : 0;
+  const nameSize = (design.nameStyle === 'serif'
+    ? framed ? ['text-[40px]', 'text-[34px]', 'text-[28px]', 'text-[24px]'] : ['text-[40px] sm:text-[64px]', 'text-[34px] sm:text-[56px]', 'text-[28px] sm:text-[46px]', 'text-[24px] sm:text-[38px]']
+    : framed ? ['text-[54px]', 'text-[46px]', 'text-[38px]', 'text-[32px]'] : ['text-[54px] sm:text-[84px]', 'text-[46px] sm:text-[76px]', 'text-[38px] sm:text-[64px]', 'text-[32px] sm:text-[54px]'])[tier];
   return (
     <div style={themeVars(theme)} className="bg-inv-surface text-ink">
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <header
-        className={`relative flex ${hero} flex-col items-center justify-center overflow-hidden px-6 text-center text-inv-hero-text ${design.frame === 'arch' || design.frame === 'toran' ? 'pt-24 pb-12 sm:pt-28' : 'py-12 sm:py-16'}`}
+        className={`relative flex ${hero} flex-col items-center justify-center overflow-hidden ${framed ? 'px-12' : 'px-10 sm:px-16'} text-center text-inv-hero-text ${design.frame === 'arch' || design.frame === 'toran' ? 'pt-24 pb-12 sm:pt-28' : 'py-12 sm:py-16'}`}
         style={{
           background:
             'radial-gradient(120% 80% at 50% 0%, var(--color-inv-hero-from) 0%, var(--color-inv-hero-via) 45%, var(--color-inv-hero-to) 100%)',
@@ -57,12 +61,12 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
           </p>
         )}
         {invite.message && (
-          <p className="max-w-sm font-display text-base italic leading-relaxed opacity-90 sm:text-lg">{invite.message}</p>
+          <p className={`relative max-w-sm font-display text-base italic leading-relaxed opacity-90 ${framed ? '' : 'sm:text-lg'}`}>{invite.message}</p>
         )}
 
-        <H1 className={`mt-3 mb-1 ${nameClass(design.nameStyle)} leading-[1.05] text-inv-accent ${nameSize} ${design.dark ? 'drop-shadow-[0_2px_18px_rgba(0,0,0,0.35)]' : ''}`}>
+        <H1 className={`mt-3 mb-1 max-w-full ${nameClass(design.nameStyle)} leading-[1.05] text-inv-accent ${nameSize} ${design.dark ? 'drop-shadow-[0_2px_18px_rgba(0,0,0,0.35)]' : ''}`}>
           {invite.partner1}
-          <span className="block text-[34px] opacity-90 sm:text-5xl">&amp;</span>
+          <span className={`block opacity-90 ${framed ? 'text-[34px]' : 'text-[34px] sm:text-5xl'}`}>&amp;</span>
           {invite.partner2}
         </H1>
 
@@ -73,7 +77,7 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
           <p className="mt-1 font-display text-lg opacity-85">{invite.venue || invite.city}</p>
         )}
 
-        <Countdown date={invite.weddingDate} time={invite.weddingTime} />
+        <Countdown date={invite.weddingDate} time={invite.weddingTime} compact={framed} />
         <a href="#celebrations" className="absolute bottom-9 text-xs tracking-[0.2em] opacity-70 transition hover:opacity-100">
           SCROLL ↓
         </a>
