@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Check, ChevronDown, ChevronUp, Copy, Eye, Loader2, Pencil, Plus, Rocket, Share2, Trash2, Users } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, ChevronUp, Compass, Copy, Eye, Loader2, Pencil, Plus, Rocket, Share2, Trash2, Users } from 'lucide-react';
 import { api, queryKeys } from '@/lib/api-client';
 import { useEditorStore } from '@/stores/editor-store';
 import { fieldErrors, inviteContentSchema } from '@/lib/validation';
@@ -13,6 +13,9 @@ import type { InviteData } from '@/lib/types';
 import { InviteView } from '@/components/invite/InviteView';
 import { RsvpForm } from '@/components/invite/RsvpForm';
 import { Shagun } from '@/components/invite/Shagun';
+import { PageLink } from '@/components/ui/PageLink';
+import { GuidedTour, TourButton } from '@/components/tour/GuidedTour';
+import { EDITOR_TOUR } from '@/components/tour/tours';
 
 /** Just the editable fields (drops id, slug, published, updatedAt). */
 const contentOf = (d: InviteData) =>
@@ -67,11 +70,13 @@ export function InviteEditor({ id }: { id: string }) {
   return (
     <div className="pb-24 lg:pb-10">
       <EditorTopBar draft={draft} dirty={dirty} saving={save.isPending} onSave={(extra) => save.mutate(extra)} saveError={save.isError ? save.error.message : ''} />
+      {/* First time in the editor: a short guided tour of every feature. */}
+      <GuidedTour id="editor" steps={EDITOR_TOUR} />
 
       {/* Mobile tabs */}
       <div className="container-page mt-4 grid grid-cols-2 gap-2 lg:hidden" role="tablist">
         {(['edit', 'preview'] as const).map((t) => (
-          <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
+          <button key={t} role="tab" data-tour-tab={t} aria-selected={tab === t} onClick={() => setTab(t)}
             className={`btn ${tab === t ? 'bg-maroon text-white' : 'btn-outline'}`}>
             {t === 'edit' ? <><Pencil className="h-4 w-4" /> Edit</> : <><Eye className="h-4 w-4" /> Preview</>}
           </button>
@@ -85,7 +90,7 @@ export function InviteEditor({ id }: { id: string }) {
         <div className={tab === 'preview' ? 'block' : 'hidden lg:block'}>
           <div className="lg:sticky lg:top-24">
             <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wide text-muted">Live preview</p>
-            <div className="mx-auto w-full max-w-[400px] overflow-hidden rounded-[2.2rem] border-[10px] border-ink bg-ink shadow-2xl">
+            <div data-tour="ed-preview" className="mx-auto w-full max-w-[400px] overflow-hidden rounded-[2.2rem] border-[10px] border-ink bg-ink shadow-2xl">
               <div className="h-[72vh] max-h-[760px] overflow-y-auto rounded-[1.6rem] bg-white">
                 <InviteView
                   framed
@@ -130,22 +135,23 @@ function EditorTopBar({ draft, dirty, saving, onSave, saveError }: {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Link href={`/dashboard/invites/${draft.id}/guests`} className="btn btn-ghost btn-sm"><Users className="h-4 w-4" /> Guests</Link>
+          <TourButton id="editor"><Compass className="h-4 w-4" /> <span className="hidden sm:inline">Tour</span></TourButton>
+          <PageLink data-tour="ed-guests" href={`/dashboard/invites/${draft.id}/guests`} className="btn btn-ghost btn-sm"><Users className="h-4 w-4" /> Guests</PageLink>
           {draft.published && (
-            <>
+            <span data-tour="ed-share" className="flex flex-wrap gap-2">
               <button type="button" className="btn btn-outline btn-sm" onClick={copy}>{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} {copied ? 'Copied' : 'Copy link'}</button>
               <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn-sm bg-[#25D366] text-white"><Share2 className="h-4 w-4" /> WhatsApp</a>
-            </>
+            </span>
           )}
-          <button type="button" className="btn btn-outline btn-sm" disabled={!dirty || saving} onClick={() => onSave({})}>
+          <button type="button" data-tour="ed-save" className="btn btn-outline btn-sm" disabled={!dirty || saving} onClick={() => onSave({})}>
             {saving && <Loader2 className="h-4 w-4 animate-spin" />} Save
           </button>
           {!draft.published ? (
-            <button type="button" className="btn btn-primary btn-sm" disabled={saving} onClick={() => onSave({ published: true })}>
+            <button type="button" data-tour="ed-publish" className="btn btn-primary btn-sm" disabled={saving} onClick={() => onSave({ published: true })}>
               <Rocket className="h-4 w-4" /> Publish
             </button>
           ) : (
-            <button type="button" className="btn btn-ghost btn-sm" disabled={saving} onClick={() => onSave({ published: false })}>Unpublish</button>
+            <button type="button" data-tour="ed-publish" className="btn btn-ghost btn-sm" disabled={saving} onClick={() => onSave({ published: false })}>Unpublish</button>
           )}
         </div>
       </div>
@@ -154,9 +160,9 @@ function EditorTopBar({ draft, dirty, saving, onSave, saveError }: {
   );
 }
 
-function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+function Section({ title, hint, tour, children }: { title: string; hint?: string; tour?: string; children: React.ReactNode }) {
   return (
-    <section className="card p-5 sm:p-6">
+    <section data-tour={tour} className="card p-5 sm:p-6">
       <h2 className="font-display text-2xl font-semibold text-maroon-900">{title}</h2>
       {hint && <p className="mb-4 text-sm text-muted">{hint}</p>}
       <div className={hint ? '' : 'mt-4'}>{children}</div>
@@ -184,7 +190,7 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
 
   return (
     <div className="space-y-5">
-      <Section title="The couple">
+      <Section title="The couple" tour="ed-couple">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="partner1" label="Partner 1" error={errors.partner1}><input {...text('partner1')} /></Field>
           <Field id="partner2" label="Partner 2" error={errors.partner2}><input {...text('partner2')} /></Field>
@@ -195,7 +201,7 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
         </div>
       </Section>
 
-      <Section title="Wedding day">
+      <Section title="Wedding day" tour="ed-day">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="weddingDate" label="Date" error={errors.weddingDate}><input type="date" {...text('weddingDate')} /></Field>
           <Field id="weddingTime" label="Muhurat / time (for countdown)" error={errors.weddingTime}><input type="time" {...text('weddingTime')} /></Field>
@@ -204,11 +210,11 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
         </div>
       </Section>
 
-      <Section title="Design">
+      <Section title="Design" tour="ed-design">
         <TemplateBrowser mode="pick" pageSize={8} selected={draft.theme} onSelect={(theme) => update({ theme })} names={[draft.partner1 || 'A', draft.partner2 || 'B']} />
       </Section>
 
-      <Section title="Functions" hint="Add every ceremony. Guests can choose which ones they'll attend.">
+      <Section title="Functions" tour="ed-functions" hint="Add every ceremony. Guests can choose which ones they'll attend.">
         <ol className="space-y-3">
           {draft.events.map((ev, i) => (
             <li key={ev.id} className="rounded-xl border border-line bg-cream/50 p-4">
@@ -259,7 +265,7 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
         )}
       </Section>
 
-      <Section title="RSVP & shagun">
+      <Section title="RSVP & shagun" tour="ed-rsvp">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="rsvpDeadline" label="RSVP by (optional)"><input type="date" {...text('rsvpDeadline')} /></Field>
           <div className="hidden sm:block" />

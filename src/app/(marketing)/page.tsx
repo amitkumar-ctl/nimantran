@@ -4,7 +4,9 @@ import { CalendarHeart, IndianRupee, MapPin, MessageCircleHeart, Pencil, Share2,
 import { site, absoluteUrl } from '@/config/site';
 import { FEATURED_IDS, getTemplate, templateCount } from '@/lib/themes';
 import { ThemeSwatch } from '@/components/invite/ThemeSwatch';
-import { PhonePreview } from '@/components/marketing/PhonePreview';
+import { HeroPhone } from '@/components/marketing/HeroPhone';
+import { Diya, Garland, Petals } from '@/components/marketing/Festive';
+import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
 import { JsonLd } from '@/components/marketing/JsonLd';
 
 export const metadata: Metadata = {
@@ -57,13 +59,17 @@ export default function HomePage() {
         ]}
       />
 
+      <RevealOnScroll />
+
       {/* ── Hero ── */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute -top-40 -right-40 h-[520px] w-[520px] rounded-full bg-gold-200/30 blur-3xl" />
-        <div className="container-page grid items-center gap-12 py-12 sm:py-16 lg:grid-cols-[1.1fr_1fr] lg:py-24">
+        <Garland />
+        <Petals />
+        <div className="container-page relative grid items-center gap-12 pt-20 pb-12 sm:pt-24 sm:pb-16 lg:grid-cols-[1.1fr_1fr] lg:pt-28 lg:pb-24">
           <div className="animate-fade-up">
             <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1 text-xs font-semibold text-maroon">
-              <Sparkles className="h-3.5 w-3.5" /> Free to create · Ready in 5 minutes
+              <Diya className="h-4 w-4" /> Free to create · Ready in 5 minutes
             </p>
             <h1 className="font-display text-5xl font-semibold leading-[1.05] text-maroon-900 sm:text-6xl lg:text-7xl">
               Your wedding invitation, <span className="font-script font-normal text-gold">beautifully</span> online
@@ -73,12 +79,12 @@ export default function HomePage() {
               in one WhatsApp message.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/signup" className="btn btn-primary px-7 py-4 text-base">Create your invite free</Link>
+              <Link href="/signup" className="btn btn-primary btn-shine animate-glow px-7 py-4 text-base">Create your invite free</Link>
               <Link href="/templates" className="btn btn-outline px-7 py-4 text-base">See designs</Link>
             </div>
             <p className="mt-4 text-sm text-muted">No app for guests · Edit anytime · Works on every phone</p>
           </div>
-          <PhonePreview />
+          <HeroPhone total={templateCount().toLocaleString('en-IN')} />
         </div>
       </section>
 
@@ -87,9 +93,9 @@ export default function HomePage() {
         <h2 id="features-title" className="text-center font-display text-4xl font-semibold text-maroon-900 sm:text-5xl">Everything guests ask you, answered</h2>
         <p className="mx-auto mt-3 max-w-2xl text-center text-muted">Replace the PDF card, the location pins and the endless “kab hai, kahan hai?” messages with one link.</p>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map(({ icon: Icon, title, text }) => (
-            <div key={title} className="card p-6">
-              <span className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-cream-2 text-maroon"><Icon className="h-5 w-5" /></span>
+          {FEATURES.map(({ icon: Icon, title, text }, i) => (
+            <div key={title} data-reveal data-reveal-delay={(i % 3) * 110} className="card group p-6 transition hover:-translate-y-1 hover:shadow-lg">
+              <span className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-cream-2 text-maroon group-hover:animate-wiggle"><Icon className="h-5 w-5" /></span>
               <h3 className="font-display text-2xl font-semibold text-maroon-900">{title}</h3>
               <p className="mt-1 text-[15px] text-ink/75">{text}</p>
             </div>
@@ -103,7 +109,7 @@ export default function HomePage() {
           <h2 id="how-title" className="text-center font-display text-4xl font-semibold text-gold-200 sm:text-5xl">How it works</h2>
           <ol className="mt-12 grid gap-6 md:grid-cols-3">
             {STEPS.map(({ icon: Icon, title, text }, i) => (
-              <li key={title} className="rounded-2xl border border-white/10 bg-white/5 p-6">
+              <li key={title} data-reveal data-reveal-delay={i * 150} className="rounded-2xl border border-white/10 bg-white/5 p-6 transition hover:bg-white/10">
                 <span className="mb-4 flex items-center gap-3">
                   <span className="grid h-10 w-10 place-items-center rounded-full bg-gold-200 font-display text-xl font-bold text-maroon-900">{i + 1}</span>
                   <Icon className="h-5 w-5 text-gold-200" />
@@ -121,8 +127,8 @@ export default function HomePage() {
         <h2 id="designs-title" className="text-center font-display text-4xl font-semibold text-maroon-900 sm:text-5xl">Designs for every ceremony</h2>
         <p className="mx-auto mt-3 max-w-2xl text-center text-muted">{templateCount().toLocaleString('en-IN')}+ designs: traditional, regional, pastel and destination. Search by colour, tradition or motif, and switch anytime, even after sharing.</p>
         <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {FEATURED_IDS.slice(0, 8).map((t) => (
-            <Link key={t} href={`/templates/${t}`} className="card group overflow-hidden transition hover:-translate-y-1">
+          {FEATURED_IDS.slice(0, 8).map((t, i) => (
+            <Link key={t} href={`/templates/${t}`} data-reveal data-reveal-delay={(i % 4) * 90} className="card group overflow-hidden transition hover:-translate-y-1 hover:shadow-lg">
               <ThemeSwatch theme={t} size="lg" />
               <div className="p-4">
                 <h3 className="font-display text-xl font-semibold text-maroon-900 group-hover:underline">{getTemplate(t).name}</h3>
@@ -141,7 +147,7 @@ export default function HomePage() {
         <h2 id="faq-title" className="text-center font-display text-4xl font-semibold text-maroon-900 sm:text-5xl">Questions couples ask</h2>
         <div className="mt-10 space-y-3">
           {FAQ.map((f) => (
-            <details key={f.q} className="card group p-5 open:shadow-md">
+            <details key={f.q} data-reveal className="card group p-5 open:shadow-md">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-xl font-semibold text-maroon-900">
                 {f.q}
                 <span className="text-2xl text-gold transition group-open:rotate-45" aria-hidden="true">+</span>
@@ -154,10 +160,12 @@ export default function HomePage() {
 
       {/* ── CTA ── */}
       <section className="container-page">
-        <div className="rounded-3xl bg-gradient-to-br from-maroon-600 to-maroon-900 px-6 py-14 text-center text-cream sm:px-12">
-          <h2 className="font-display text-4xl font-semibold text-gold-200 sm:text-5xl">Start your invitation today</h2>
-          <p className="mx-auto mt-3 max-w-xl text-cream/80">It’s free to create and takes about five minutes. Your guests will love it.</p>
-          <Link href="/signup" className="btn mt-8 bg-gold-200 px-8 py-4 text-base text-maroon-900 hover:bg-gold">Create your invite free</Link>
+        <div data-reveal className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-maroon-600 to-maroon-900 px-6 py-16 text-center text-cream sm:px-12">
+          <Garland swags={6} className="opacity-90" />
+          <Petals count={10} />
+          <h2 className="relative mt-4 font-display text-4xl font-semibold text-gold-200 sm:text-5xl">Start your invitation today</h2>
+          <p className="relative mx-auto mt-3 max-w-xl text-cream/80">It’s free to create and takes about five minutes. Your guests will love it.</p>
+          <Link href="/signup" className="btn btn-shine animate-glow relative mt-8 bg-gold-200 px-8 py-4 text-base text-maroon-900 hover:bg-gold">Create your invite free</Link>
         </div>
       </section>
     </main>

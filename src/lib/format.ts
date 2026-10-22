@@ -2,19 +2,38 @@
 // time-zone drift → no hydration mismatches). Dates are stored as the
 // venue-local calendar day "YYYY-MM-DD".
 
-const toUTC = (ymd: string) => {
+// Built by hand rather than with Intl: Node and browsers ship different
+// locale data (e.g. "Thursday, 10 December 2026" vs "Thursday 10 December,
+// 2026", "Sep" vs "Sept"), and any difference breaks hydration.
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+function parts(ymd: string) {
   const [y, m, d] = ymd.split('-').map(Number);
-  return new Date(Date.UTC(y, (m || 1) - 1, d || 1));
-};
+  const date = new Date(Date.UTC(y, (m || 1) - 1, d || 1));
+  return { day: date.getUTCDate(), month: MONTHS[date.getUTCMonth()], year: date.getUTCFullYear(), weekday: DAYS[date.getUTCDay()] };
+}
 
-export const formatLongDate = (ymd: string) =>
-  ymd ? new Intl.DateTimeFormat('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(toUTC(ymd)) : '';
+/** "2026-12-10" → "Thursday, 10 December 2026" */
+export function formatLongDate(ymd: string) {
+  if (!ymd) return '';
+  const p = parts(ymd);
+  return `${p.weekday}, ${p.day} ${p.month} ${p.year}`;
+}
 
-export const formatShortDate = (ymd: string) =>
-  ymd ? new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(toUTC(ymd)) : '';
+/** "2026-12-10" → "Thu, 10 Dec" */
+export function formatShortDate(ymd: string) {
+  if (!ymd) return '';
+  const p = parts(ymd);
+  return `${p.weekday.slice(0, 3)}, ${p.day} ${p.month.slice(0, 3)}`;
+}
 
-export const formatHeroDate = (ymd: string) =>
-  ymd ? new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(toUTC(ymd)).replace(/,/g, ' ·') : '';
+/** "2026-12-10" → "Thu · 10 Dec · 2026" */
+export function formatHeroDate(ymd: string) {
+  if (!ymd) return '';
+  const p = parts(ymd);
+  return `${p.weekday.slice(0, 3)} · ${String(p.day).padStart(2, '0')} ${p.month.slice(0, 3)} · ${p.year}`;
+}
 
 /** "18:30" → "6:30 PM" */
 export function formatTime(hhmm: string) {

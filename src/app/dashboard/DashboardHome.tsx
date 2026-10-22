@@ -3,13 +3,15 @@
 import { useState, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CalendarHeart, ExternalLink, Loader2, Pencil, Plus, Users } from 'lucide-react';
+import { CalendarHeart, Compass, ExternalLink, Loader2, Pencil, Plus, Users } from 'lucide-react';
 import { api, ApiError, queryKeys } from '@/lib/api-client';
 import { createInviteSchema, fieldErrors } from '@/lib/validation';
 import { DEFAULT_THEME, isTheme, type Theme } from '@/lib/themes';
 import { TemplateBrowser } from '@/components/templates/TemplateBrowser';
 import { ThemeSwatch } from '@/components/invite/ThemeSwatch';
 import { formatLongDate } from '@/lib/format';
+import { GuidedTour, TourButton } from '@/components/tour/GuidedTour';
+import { DASHBOARD_TOUR } from '@/components/tour/tours';
 import { goToPage, PageLink } from '@/components/ui/PageLink';
 
 export function DashboardHome() {
@@ -30,12 +32,18 @@ export function DashboardHome() {
           <h1 className="font-display text-4xl font-semibold text-maroon-900">My invitations</h1>
           <p className="text-muted">Create, edit and share your wedding invite.</p>
         </div>
-        {hasInvites && !showCreate && (
-          <button type="button" className="btn btn-primary" onClick={() => setShowCreate(true)}>
-            <Plus className="h-4 w-4" /> New invite
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <TourButton id="dashboard"><Compass className="h-4 w-4" /> Tour</TourButton>
+          {hasInvites && !showCreate && (
+            <button type="button" data-tour="new-invite" className="btn btn-primary" onClick={() => setShowCreate(true)}>
+              <Plus className="h-4 w-4" /> New invite
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* First visit: a short guided tour (once the page has loaded). */}
+      {!isPending && <GuidedTour id="dashboard" steps={DASHBOARD_TOUR} />}
 
       {isPending && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <div key={i} className="card h-44 animate-pulse" />)}</div>}
       {isError && <p className="card p-6 text-red-800" role="alert">{error.message}</p>}
@@ -46,8 +54,8 @@ export function DashboardHome() {
 
       {hasInvites && (
         <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {invites!.map((inv) => (
-            <li key={inv.id} className="card overflow-hidden">
+          {invites!.map((inv, i) => (
+            <li key={inv.id} data-tour={i === 0 ? 'invite-card' : undefined} className="card overflow-hidden">
               <ThemeSwatch theme={inv.theme} names={[inv.partner1, inv.partner2]} />
               <div className="p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
@@ -101,14 +109,14 @@ function CreateInviteCard({ initialTheme, onCancel }: { initialTheme: Theme; onC
       <p className="mb-6 text-sm text-muted">Just the basics. You can add every function, venue and your UPI shagun next.</p>
       <div className="grid gap-4 sm:grid-cols-2">
         {(['partner1', 'partner2'] as const).map((k, i) => (
-          <div key={k}>
+          <div key={k} data-tour={i === 0 ? 'create-names' : undefined}>
             <label htmlFor={k} className="label">{i === 0 ? "Groom's / partner's name" : "Bride's / partner's name"}</label>
             <input id={k} className="input" value={form[k]} placeholder={i === 0 ? 'Aarav' : 'Meera'} aria-invalid={!!errors[k]}
               onChange={(e) => setForm((f) => ({ ...f, [k]: e.target.value }))} />
             {errors[k] && <p className="mt-1 text-xs text-red-700">{errors[k]}</p>}
           </div>
         ))}
-        <div>
+        <div data-tour="create-date">
           <label htmlFor="weddingDate" className="label">Wedding date</label>
           <input id="weddingDate" type="date" className="input" value={form.weddingDate} aria-invalid={!!errors.weddingDate}
             onChange={(e) => setForm((f) => ({ ...f, weddingDate: e.target.value }))} />
@@ -116,7 +124,7 @@ function CreateInviteCard({ initialTheme, onCancel }: { initialTheme: Theme; onC
         </div>
       </div>
 
-      <fieldset className="mt-6">
+      <fieldset className="mt-6" data-tour="create-design">
         <legend className="label">Choose a design</legend>
         <TemplateBrowser
           mode="pick" className="mt-1" selected={form.theme}
@@ -127,7 +135,7 @@ function CreateInviteCard({ initialTheme, onCancel }: { initialTheme: Theme; onC
 
       {create.isError && !Object.keys(errors).length && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">{create.error.message}</p>}
       <div className="mt-6 flex flex-wrap gap-3">
-        <button type="submit" className="btn btn-primary" disabled={create.isPending}>
+        <button type="submit" data-tour="create-submit" className="btn btn-primary" disabled={create.isPending}>
           {create.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Create invite
         </button>
         {onCancel && <button type="button" className="btn btn-ghost" onClick={onCancel}>Cancel</button>}

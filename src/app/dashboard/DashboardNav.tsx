@@ -27,6 +27,7 @@ export function NavLinks({ pathname }: { pathname: string }) {
             key={href}
             href={href}
             aria-current={on ? 'page' : undefined}
+            data-tour={href === '/templates' ? 'nav-designs' : undefined}
             className={`btn btn-sm gap-1.5 px-2.5 sm:px-3 ${on ? 'bg-cream-2 text-maroon' : 'btn-ghost'}`}
           >
             <Icon className="h-4 w-4" />
