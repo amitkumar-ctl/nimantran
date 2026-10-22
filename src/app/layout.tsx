@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import { Providers } from './providers';
 import { site } from '@/config/site';
+import { Analytics } from "@vercel/analytics/next"
 import './globals.css';
 
 // Self-hosted fonts (no request to Google at runtime, no layout shift).
@@ -55,6 +56,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     <html lang="en" className={`${inter.variable} ${cormorant.variable} ${vibes.variable} ${tiro.variable}`}>
       <body className="min-h-dvh">
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
