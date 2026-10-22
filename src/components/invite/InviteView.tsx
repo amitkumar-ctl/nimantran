@@ -70,7 +70,7 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
           {invite.partner2}
         </H1>
 
-        <p className="mt-3 font-display text-lg font-semibold uppercase sm:text-xl tracking-[0.18em]">
+        <p className={`relative mt-3 whitespace-nowrap font-display font-semibold uppercase ${framed ? 'text-base tracking-[0.14em]' : 'text-base tracking-[0.14em] sm:text-xl sm:tracking-[0.18em]'}`}>
           <time dateTime={invite.weddingDate}>{formatHeroDate(invite.weddingDate)}</time>
         </p>
         {(invite.venue || invite.city) && (
