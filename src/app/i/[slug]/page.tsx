@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { getPublicInvite } from '@/lib/invites';
 import { formatLongDate } from '@/lib/format';
-import { site } from '@/config/site';
 import { InviteView } from '@/components/invite/InviteView';
 import { RsvpForm } from '@/components/invite/RsvpForm';
 import { Shagun } from '@/components/invite/Shagun';
+import { MadeWith } from '@/components/invite/MadeWith';
 
 type Props = PageProps<'/i/[slug]'>;
 
@@ -50,11 +49,7 @@ export default async function InvitePage({ params }: Props) {
         rsvpSlot={<RsvpForm slug={invite.slug} events={invite.events.map((e) => e.name)} />}
         shagunSlot={<Shagun upiId={invite.upiId} upiName={invite.upiName} couple={couple} />}
       />
-      <footer className="bg-cream-2/70 pb-10 text-center text-xs text-muted">
-        Made with ♥ on{' '}
-        <Link href="/" className="font-semibold text-maroon underline-offset-2 hover:underline">{site.name}</Link>
-        {' '}· Create your own wedding invite
-      </footer>
+      <MadeWith />
     </>
   );
 }

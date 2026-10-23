@@ -35,6 +35,34 @@ export function formatHeroDate(ymd: string) {
   return `${p.weekday.slice(0, 3)} · ${String(p.day).padStart(2, '0')} ${p.month.slice(0, 3)} · ${p.year}`;
 }
 
+/** Today's date in India (IST, UTC+5:30) as "YYYY-MM-DD". */
+export const todayIST = (now = Date.now()) => new Date(now + 330 * 60_000).toISOString().slice(0, 10);
+
+export const PAST_DATE_MESSAGE = 'Pick today or a later date';
+
+type Dated = { weddingDate?: string; rsvpDeadline?: string; events?: { id: string; date: string }[] };
+
+/**
+ * Dates that were changed to a day before today (IST). Unchanged dates are
+ * fine, so an invite whose wedding already happened can still be edited.
+ * Keys match the form's error keys ("weddingDate", "events.2.date"…).
+ */
+export function pastDateErrors(next: Dated, prev?: Dated, today = todayIST()): Record<string, string> {
+  const errors: Record<string, string> = {};
+  const changedToPast = (value?: string, before?: string) => !!value && value < today && value !== before;
+  if (changedToPast(next.weddingDate, prev?.weddingDate)) errors.weddingDate = PAST_DATE_MESSAGE;
+  if (changedToPast(next.rsvpDeadline, prev?.rsvpDeadline)) errors.rsvpDeadline = PAST_DATE_MESSAGE;
+  next.events?.forEach((e, i) => {
+    const before = prev?.events?.find((o) => o.id === e.id)?.date;
+    if (changedToPast(e.date, before)) errors[`events.${i}.date`] = PAST_DATE_MESSAGE;
+  });
+  const wedding = next.weddingDate ?? prev?.weddingDate;
+  if (!errors.rsvpDeadline && next.rsvpDeadline && wedding && next.rsvpDeadline > wedding && next.rsvpDeadline !== prev?.rsvpDeadline) {
+    errors.rsvpDeadline = 'RSVP date should be on or before the wedding';
+  }
+  return errors;
+}
+
 /** "18:30" → "6:30 PM" */
 export function formatTime(hhmm: string) {
   if (!/^\d{2}:\d{2}$/.test(hhmm)) return hhmm;

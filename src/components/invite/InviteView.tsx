@@ -3,6 +3,8 @@ import { MapPin } from 'lucide-react';
 import type { InviteData } from '@/lib/types';
 import { formatHeroDate, formatLongDate, formatShortDate, mapsSearchUrl } from '@/lib/format';
 import { Countdown } from './Countdown';
+import { AddToCalendar } from './AddToCalendar';
+import { absoluteUrl } from '@/config/site';
 import { Divider } from './Mandala';
 import { Crest, HeroFrame, initialsOf, nameClass } from './Ornaments';
 import { getTemplate, themeVars } from '@/lib/themes';
@@ -24,6 +26,7 @@ type Props = {
  */
 export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Props) {
   const hero = framed ? 'min-h-[640px]' : 'min-h-dvh';
+  const link = absoluteUrl(`/i/${invite.slug}`);
   // Previews (editor, marketing mock-ups) use neutral tags so the host page
   // keeps a single <h1> and a clean heading outline for SEO.
   const H1 = framed ? 'p' : 'h1';
@@ -92,6 +95,9 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
             {invite.events.length > 1 && <> – {formatLongDate(invite.events[invite.events.length - 1].date)}</>}
           </p>
           <Divider />
+          <div className="mb-4 flex justify-center">
+            <AddToCalendar invite={invite} link={link} disabled={framed} label="Save all dates" />
+          </div>
           <ol className="space-y-3">
             {invite.events.map((ev, i) => {
               // Falls back to the main venue when a function has no venue of its own.
@@ -105,17 +111,20 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
                   <div className="min-w-0 flex-1">
                     <H3 className="font-display text-[22px] font-semibold leading-tight text-inv-heading">{ev.name}</H3>
                     <p className="text-[13px] text-muted">
-                      <time dateTime={ev.date}>{formatShortDate(ev.date)}</time>
-                      {ev.time && <> · {ev.time}</>}
+                      <time dateTime={ev.date} className="whitespace-nowrap">{formatShortDate(ev.date)}</time>
+                      {ev.time && <> · <span className="whitespace-nowrap">{ev.time}</span></>}
                     </p>
                     {ev.venue && <p className="truncate text-[13px] text-muted">{ev.venue}</p>}
                     {ev.note && <p className="mt-0.5 text-xs italic text-inv-primary">{ev.note}</p>}
                   </div>
-                  {map && (
-                    <a href={map} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm flex-none rounded-full text-inv-primary" aria-label={`Open ${ev.name} venue in Google Maps`}>
-                      <MapPin className="h-3.5 w-3.5" /> Map
-                    </a>
-                  )}
+                  <div className="flex flex-none flex-col items-stretch gap-1.5">
+                    {map && (
+                      <a href={map} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm rounded-full text-inv-primary" aria-label={`Open ${ev.name} venue in Google Maps`}>
+                        <MapPin className="h-3.5 w-3.5" /> Map
+                      </a>
+                    )}
+                    <AddToCalendar invite={invite} event={ev} link={link} disabled={framed} />
+                  </div>
                 </li>
               );
             })}

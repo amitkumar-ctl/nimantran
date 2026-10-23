@@ -9,7 +9,7 @@ import { createInviteSchema, fieldErrors } from '@/lib/validation';
 import { DEFAULT_THEME, isTheme, type Theme } from '@/lib/themes';
 import { TemplateBrowser } from '@/components/templates/TemplateBrowser';
 import { ThemeSwatch } from '@/components/invite/ThemeSwatch';
-import { formatLongDate } from '@/lib/format';
+import { formatLongDate, pastDateErrors, todayIST } from '@/lib/format';
 import { GuidedTour, TourButton } from '@/components/tour/GuidedTour';
 import { DeleteInvite } from '@/components/invite/DeleteInvite';
 import { DASHBOARD_TOUR } from '@/components/tour/tours';
@@ -101,6 +101,8 @@ function CreateInviteCard({ initialTheme, onCancel }: { initialTheme: Theme; onC
     e.preventDefault();
     const parsed = createInviteSchema.safeParse(form);
     if (!parsed.success) return setErrors(fieldErrors(parsed.error));
+    const past = pastDateErrors({ weddingDate: parsed.data.weddingDate });
+    if (past.weddingDate) return setErrors(past);
     setErrors({});
     create.mutate(parsed.data);
   }
@@ -120,7 +122,7 @@ function CreateInviteCard({ initialTheme, onCancel }: { initialTheme: Theme; onC
         ))}
         <div data-tour="create-date">
           <label htmlFor="weddingDate" className="label">Wedding date</label>
-          <input id="weddingDate" type="date" className="input" value={form.weddingDate} aria-invalid={!!errors.weddingDate}
+          <input id="weddingDate" type="date" className="input" min={todayIST()} value={form.weddingDate} aria-invalid={!!errors.weddingDate}
             onChange={(e) => setForm((f) => ({ ...f, weddingDate: e.target.value }))} />
           {errors.weddingDate && <p className="mt-1 text-xs text-red-700">{errors.weddingDate}</p>}
         </div>
