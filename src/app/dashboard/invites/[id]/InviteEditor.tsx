@@ -7,6 +7,7 @@ import { ArrowLeft, Check, ChevronDown, ChevronUp, Compass, Copy, Eye, Loader2, 
 import { api, queryKeys } from '@/lib/api-client';
 import { useEditorStore } from '@/stores/editor-store';
 import { fieldErrors, inviteContentSchema } from '@/lib/validation';
+import { pastDateErrors, todayIST } from '@/lib/format';
 import { EVENT_PRESETS } from '@/lib/sample';
 import { TemplateBrowser } from '@/components/templates/TemplateBrowser';
 import type { InviteData } from '@/lib/types';
@@ -15,6 +16,8 @@ import { RsvpForm } from '@/components/invite/RsvpForm';
 import { Shagun } from '@/components/invite/Shagun';
 import { goToPage, PageLink } from '@/components/ui/PageLink';
 import { DeleteInvite } from '@/components/invite/DeleteInvite';
+import { QrCodeButton } from '@/components/invite/QrCodeButton';
+import { getTemplate } from '@/lib/themes';
 import { GuidedTour, TourButton } from '@/components/tour/GuidedTour';
 import { EDITOR_TOUR } from '@/components/tour/tours';
 
@@ -53,6 +56,12 @@ export function InviteEditor({ id }: { id: string }) {
       if (!parsed.success) {
         setErrors(fieldErrors(parsed.error));
         throw new Error('Please fix the highlighted fields');
+      }
+      // Same rule as the server: dates you change can't be in the past.
+      const past = pastDateErrors(parsed.data, data);
+      if (Object.keys(past).length) {
+        setErrors(past);
+        throw new Error('Please pick today or a later date for the highlighted dates');
       }
       setErrors({});
       return api.updateInvite(id, { ...parsed.data, ...extra });
@@ -142,6 +151,7 @@ function EditorTopBar({ draft, dirty, saving, onSave, saveError }: {
             <span data-tour="ed-share" className="flex flex-wrap gap-2">
               <button type="button" className="btn btn-outline btn-sm" onClick={copy}>{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} {copied ? 'Copied' : 'Copy link'}</button>
               <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn-sm bg-[#25D366] text-white"><Share2 className="h-4 w-4" /> WhatsApp</a>
+              <QrCodeButton link={link} slug={draft.slug} names={`${draft.partner1} & ${draft.partner2}`} colour={getTemplate(draft.theme).colors.heading} />
             </span>
           )}
           <button type="button" data-tour="ed-save" className="btn btn-outline btn-sm" disabled={!dirty || saving} onClick={() => onSave({})}>
@@ -184,6 +194,7 @@ function Field({ id, label, error, children }: { id: string; label: string; erro
 function EditorForm({ errors }: { errors: Record<string, string> }) {
   const { draft, update, updateEvent, addEvent, removeEvent, moveEvent } = useEditorStore();
   if (!draft) return null;
+  const today = todayIST(); // date pickers start from today (India time)
   const text = (k: keyof InviteData) => ({
     id: k, className: 'input', value: String(draft[k] ?? ''), 'aria-invalid': !!errors[k],
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => update({ [k]: e.target.value } as Partial<InviteData>),
@@ -204,7 +215,7 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
 
       <Section title="Wedding day" tour="ed-day">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field id="weddingDate" label="Date" error={errors.weddingDate}><input type="date" {...text('weddingDate')} /></Field>
+          <Field id="weddingDate" label="Date" error={errors.weddingDate}><input type="date" min={today} {...text('weddingDate')} /></Field>
           <Field id="weddingTime" label="Muhurat / time (for countdown)" error={errors.weddingTime}><input type="time" {...text('weddingTime')} /></Field>
           <Field id="venue" label="Main venue"><input {...text('venue')} placeholder="The Leela Palace, Jaipur" /></Field>
           <Field id="city" label="City"><input {...text('city')} placeholder="Jaipur" /></Field>
@@ -230,7 +241,7 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field id={`d-${ev.id}`} label="Date" error={errors[`events.${i}.date`]}>
-                  <input id={`d-${ev.id}`} type="date" className="input" value={ev.date} onChange={(e) => updateEvent(ev.id, { date: e.target.value })} />
+                  <input id={`d-${ev.id}`} type="date" min={today} className="input" value={ev.date} aria-invalid={!!errors[`events.${i}.date`]} onChange={(e) => updateEvent(ev.id, { date: e.target.value })} />
                 </Field>
                 <Field id={`t-${ev.id}`} label="Time">
                   <input id={`t-${ev.id}`} className="input" value={ev.time} placeholder="7:30 PM" onChange={(e) => updateEvent(ev.id, { time: e.target.value })} />
@@ -268,7 +279,7 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
 
       <Section title="RSVP & shagun" tour="ed-rsvp">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field id="rsvpDeadline" label="RSVP by (optional)"><input type="date" {...text('rsvpDeadline')} /></Field>
+          <Field id="rsvpDeadline" label="RSVP by (optional)" error={errors.rsvpDeadline}><input type="date" min={today} max={draft.weddingDate || undefined} {...text('rsvpDeadline')} /></Field>
           <div className="hidden sm:block" />
           <Field id="upiId" label="UPI ID for shagun (optional)" error={errors.upiId}><input {...text('upiId')} placeholder="name@okhdfcbank" autoCapitalize="none" /></Field>
           <Field id="upiName" label="Name shown in UPI app"><input {...text('upiName')} placeholder="Aarav Sharma" /></Field>
