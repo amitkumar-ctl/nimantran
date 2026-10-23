@@ -14,6 +14,8 @@ type Props = {
   onDeleted?: () => void;
   /** Small trash button for the dashboard cards; full-width for the editor. */
   variant?: 'card' | 'section';
+  /** data-tour anchor for the guided tour. */
+  tour?: string;
 };
 
 /**
@@ -21,7 +23,7 @@ type Props = {
  * The warning is stronger for live invites and ones that already have RSVPs,
  * because the guests' link stops working and the replies are deleted too.
  */
-export function DeleteInvite({ id, published, rsvpCount = 0, onDeleted, variant = 'card' }: Props) {
+export function DeleteInvite({ id, published, rsvpCount = 0, onDeleted, variant = 'card', tour }: Props) {
   const qc = useQueryClient();
   const [confirming, setConfirming] = useState(false);
   const del = useMutation({
@@ -37,7 +39,7 @@ export function DeleteInvite({ id, published, rsvpCount = 0, onDeleted, variant 
 
   if (!confirming) {
     return variant === 'card' ? (
-      <button type="button" className="btn btn-ghost btn-sm ml-auto px-2.5 text-red-700 hover:bg-red-50 hover:text-red-800" onClick={() => setConfirming(true)} aria-label="Delete invite" title="Delete invite">
+      <button type="button" data-tour={tour} className="btn btn-ghost btn-sm ml-auto px-2.5 text-red-700 hover:bg-red-50 hover:text-red-800" onClick={() => setConfirming(true)} aria-label="Delete invite" title="Delete invite">
         <Trash2 className="h-4 w-4" />
       </button>
     ) : (

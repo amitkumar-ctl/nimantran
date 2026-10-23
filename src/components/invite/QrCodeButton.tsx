@@ -16,7 +16,7 @@ export function QrCodeButton(props: Props) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button type="button" className="btn btn-outline btn-sm" onClick={() => setOpen(true)}>
+      <button type="button" data-tour="ed-qr" className="btn btn-outline btn-sm" onClick={() => setOpen(true)}>
         <QrCode className="h-4 w-4" /> QR code
       </button>
       {open && <QrDialog {...props} onClose={() => setOpen(false)} />}

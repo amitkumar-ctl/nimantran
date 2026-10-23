@@ -25,7 +25,7 @@ export function AddToCalendar({ invite, event, link, disabled = false, label = '
     </>
   );
   if (disabled) {
-    return <span className={`btn btn-outline btn-sm rounded-full text-inv-primary ${className}`} aria-hidden="true">{button}</span>;
+    return <span data-tour={event ? undefined : 'ed-calendar'} className={`btn btn-outline btn-sm rounded-full text-inv-primary ${className}`} aria-hidden="true">{button}</span>;
   }
   return (
     <details className={`group relative ${className}`}>

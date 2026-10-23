@@ -23,7 +23,9 @@ export type TourStep = {
   tab?: 'edit' | 'preview';
 };
 
-const doneKey = (id: string) => `nm_tour_${id}_v1`;
+// Bump the version when tours gain steps, so returning users see them once.
+const TOUR_VERSION = 2;
+const doneKey = (id: string) => `nm_tour_${id}_v${TOUR_VERSION}`;
 const REPLAY_EVENT = 'nm:tour';
 
 // "Has this tour been seen?" as an external store (localStorage), so reading it
@@ -194,19 +196,29 @@ function TourOverlay({ step, index, total, onNext, onBack, onClose }: {
   const PAD = 8;
   const rect = rectKey ? rectKey.split(',').map(Number) : null;
 
-  // Card placement: below the element if there's room, else above, else pinned to the bottom.
+  // Card placement: in whichever gap (below or above the highlighted element)
+  // is bigger, anchored to that edge and never taller than the gap, so the
+  // buttons are always on screen. Small gaps (tall elements): pin the card to
+  // the bottom or top of the screen, away from the element's centre.
   const cardW = Math.min(360, vw - 24);
+  const MARGIN = 12;
+  const MIN_GAP = 220;
   let cardStyle: React.CSSProperties;
   if (!rect) {
-    cardStyle = { left: (vw - cardW) / 2, top: Math.max(24, vh / 2 - 140) };
+    const t = Math.max(MARGIN, vh / 2 - 170);
+    cardStyle = { left: (vw - cardW) / 2, top: t, maxHeight: vh - t - MARGIN };
   } else {
     const [top, left, w, h] = rect;
-    const x = Math.min(Math.max(12, left + w / 2 - cardW / 2), vw - cardW - 12);
-    const below = top + h + PAD + 14;
-    const est = 230; // approx. card height
-    if (below + est < vh) cardStyle = { left: x, top: below };
-    else if (top - PAD - 14 - est > 0) cardStyle = { left: x, top: top - PAD - 14 - est };
-    else cardStyle = { left: x, bottom: 12 };
+    const x = Math.min(Math.max(MARGIN, left + w / 2 - cardW / 2), vw - cardW - MARGIN);
+    const belowTop = top + h + PAD + 12;
+    const spaceBelow = vh - belowTop - MARGIN;
+    const spaceAbove = top - PAD - 12 - MARGIN;
+    const offScreen = top > vh || top + h < 0; // still scrolling to it
+    if (offScreen) cardStyle = { left: x, bottom: MARGIN, maxHeight: vh * 0.6 };
+    else if (spaceBelow >= MIN_GAP && spaceBelow >= spaceAbove) cardStyle = { left: x, top: belowTop, maxHeight: spaceBelow };
+    else if (spaceAbove >= MIN_GAP) cardStyle = { left: x, bottom: vh - (top - PAD - 12), maxHeight: spaceAbove };
+    else if (top + h / 2 < vh / 2) cardStyle = { left: x, bottom: MARGIN, maxHeight: vh * 0.6 };
+    else cardStyle = { left: x, top: MARGIN, maxHeight: vh * 0.6 };
   }
 
   useEffect(() => { cardRef.current?.focus({ preventScroll: true }); }, [index]);
@@ -228,7 +240,7 @@ function TourOverlay({ step, index, total, onNext, onBack, onClose }: {
         ref={cardRef}
         tabIndex={-1}
         style={{ ...cardStyle, width: cardW }}
-        className="fixed z-[62] animate-pop rounded-2xl border border-gold/40 bg-white p-5 shadow-2xl outline-none"
+        className="fixed z-[62] animate-pop overflow-y-auto overscroll-contain rounded-2xl border border-gold/40 bg-white p-5 shadow-2xl outline-none"
       >
         <div className="mb-2 flex items-center justify-between gap-3">
           <span className="text-xs font-semibold tracking-wide text-muted uppercase">Step {index + 1} of {total}</span>
@@ -239,7 +251,8 @@ function TourOverlay({ step, index, total, onNext, onBack, onClose }: {
         <div className="mt-4 h-1 overflow-hidden rounded-full bg-cream-2" aria-hidden="true">
           <div className="h-full rounded-full bg-gradient-to-r from-gold to-maroon transition-all duration-500" style={{ width: `${((index + 1) / total) * 100}%` }} />
         </div>
-        <div className="mt-4 flex items-center justify-between gap-2">
+        {/* Stays visible even if the card has to scroll on a small screen. */}
+        <div className="sticky -bottom-5 -mx-5 -mb-5 mt-4 flex items-center justify-between gap-2 bg-white px-5 pt-1 pb-5">
           <button type="button" onClick={onClose} className="text-sm text-muted underline-offset-2 hover:underline">{last ? '' : 'Skip tour'}</button>
           <div className="flex gap-2">
             {onBack && <button type="button" onClick={onBack} className="btn btn-outline btn-sm"><ArrowLeft className="h-4 w-4" /> Back</button>}
@@ -255,5 +268,6 @@ function TourOverlay({ step, index, total, onNext, onBack, onClose }: {
 
 /** "Take the tour" button; replays the given tour. */
 export function TourButton({ id, className = 'btn btn-ghost btn-sm', children }: { id: string; className?: string; children: React.ReactNode }) {
-  return <button type="button" data-tour="tour-replay" className={className} onClick={() => startTour(id)}>{children}</button>;
+  // aria-label: on phones the button may show only its icon.
+  return <button type="button" data-tour="tour-replay" aria-label="Tour: replay the guided tour" title="Replay the guided tour" className={className} onClick={() => startTour(id)}>{children}</button>;
 }

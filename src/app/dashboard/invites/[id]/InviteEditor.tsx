@@ -93,7 +93,7 @@ export function InviteEditor({ id }: { id: string }) {
         ))}
       </div>
 
-      <div className="container-page mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="container-page mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
         <div className={tab === 'edit' ? 'block' : 'hidden lg:block'}>
           <EditorForm errors={errors} />
         </div>
@@ -286,7 +286,7 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
         </div>
       </Section>
 
-      <section className="rounded-2xl border border-red-100 bg-white/60 p-5 sm:p-6">
+      <section data-tour="ed-delete" className="rounded-2xl border border-red-100 bg-white/60 p-5 sm:p-6">
         <h2 className="font-display text-xl font-semibold text-maroon-900">Delete invite</h2>
         <p className="mb-3 text-sm text-muted">Created by mistake? Remove this invite and its RSVPs for good.</p>
         <DeleteInvite

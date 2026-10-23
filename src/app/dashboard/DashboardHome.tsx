@@ -71,7 +71,7 @@ export function DashboardHome() {
                   {inv.published && (
                     <a href={`/i/${inv.slug}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm"><ExternalLink className="h-3.5 w-3.5" /> View</a>
                   )}
-                  <DeleteInvite id={inv.id} published={inv.published} rsvpCount={inv.rsvpCount} />
+                  <DeleteInvite id={inv.id} published={inv.published} rsvpCount={inv.rsvpCount} tour={i === 0 ? 'invite-delete' : undefined} />
                 </div>
               </div>
             </li>
