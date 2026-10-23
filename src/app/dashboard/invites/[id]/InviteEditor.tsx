@@ -13,7 +13,8 @@ import type { InviteData } from '@/lib/types';
 import { InviteView } from '@/components/invite/InviteView';
 import { RsvpForm } from '@/components/invite/RsvpForm';
 import { Shagun } from '@/components/invite/Shagun';
-import { PageLink } from '@/components/ui/PageLink';
+import { goToPage, PageLink } from '@/components/ui/PageLink';
+import { DeleteInvite } from '@/components/invite/DeleteInvite';
 import { GuidedTour, TourButton } from '@/components/tour/GuidedTour';
 import { EDITOR_TOUR } from '@/components/tour/tours';
 
@@ -273,6 +274,21 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
           <Field id="upiName" label="Name shown in UPI app"><input {...text('upiName')} placeholder="Aarav Sharma" /></Field>
         </div>
       </Section>
+
+      <section className="rounded-2xl border border-red-100 bg-white/60 p-5 sm:p-6">
+        <h2 className="font-display text-xl font-semibold text-maroon-900">Delete invite</h2>
+        <p className="mb-3 text-sm text-muted">Created by mistake? Remove this invite and its RSVPs for good.</p>
+        <DeleteInvite
+          id={draft.id}
+          published={draft.published}
+          variant="section"
+          onDeleted={() => {
+            // Nothing left to save: clear the "unsaved changes" guard before leaving.
+            useEditorStore.setState({ dirty: false });
+            setTimeout(() => goToPage('/dashboard'), 0);
+          }}
+        />
+      </section>
     </div>
   );
 }
