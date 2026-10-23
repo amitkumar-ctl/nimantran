@@ -11,6 +11,7 @@ import { TemplateBrowser } from '@/components/templates/TemplateBrowser';
 import { ThemeSwatch } from '@/components/invite/ThemeSwatch';
 import { formatLongDate } from '@/lib/format';
 import { GuidedTour, TourButton } from '@/components/tour/GuidedTour';
+import { DeleteInvite } from '@/components/invite/DeleteInvite';
 import { DASHBOARD_TOUR } from '@/components/tour/tours';
 import { goToPage, PageLink } from '@/components/ui/PageLink';
 
@@ -66,10 +67,11 @@ export function DashboardHome() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <PageLink href={`/dashboard/invites/${inv.id}`} className="btn btn-outline btn-sm"><Pencil className="h-3.5 w-3.5" /> Edit</PageLink>
-                  <PageLink href={`/dashboard/invites/${inv.id}/guests`} className="btn btn-outline btn-sm"><Users className="h-3.5 w-3.5" /> {inv.rsvpCount} RSVPs</PageLink>
+                  <PageLink href={`/dashboard/invites/${inv.id}/guests`} className="btn btn-outline btn-sm"><Users className="h-3.5 w-3.5" /> {inv.rsvpCount} RSVP{inv.rsvpCount === 1 ? '' : 's'}</PageLink>
                   {inv.published && (
                     <a href={`/i/${inv.slug}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm"><ExternalLink className="h-3.5 w-3.5" /> View</a>
                   )}
+                  <DeleteInvite id={inv.id} published={inv.published} rsvpCount={inv.rsvpCount} />
                 </div>
               </div>
             </li>
