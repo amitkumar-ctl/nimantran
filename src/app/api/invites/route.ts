@@ -1,7 +1,8 @@
+import { pastDateErrors, todayIST } from '@/lib/format';
 import { Types } from 'mongoose';
 import { Invite } from '@/lib/models/Invite';
 import { Rsvp } from '@/lib/models/Rsvp';
-import { json, parseBody, requireUser } from '@/lib/api-helpers';
+import { error, json, parseBody, requireUser } from '@/lib/api-helpers';
 import { makeSlug, toInviteData } from '@/lib/invites';
 import { createInviteSchema } from '@/lib/validation';
 import { sampleInvite } from '@/lib/sample';
@@ -36,11 +37,18 @@ export async function POST(req: Request) {
   if ('response' in body) return body.response;
 
   const { partner1, partner2, weddingDate, theme } = body.data;
+  const past = pastDateErrors({ weddingDate });
+  if (past.weddingDate) return error('Please fix the highlighted fields', 422, past);
   const sample = sampleInvite(theme);
   // Shift the sample functions so they lead up to the chosen wedding date.
   const base = Date.parse(`${sample.weddingDate}T00:00:00Z`);
   const target = Date.parse(`${weddingDate}T00:00:00Z`);
-  const shift = (d: string) => new Date(Date.parse(`${d}T00:00:00Z`) - base + target).toISOString().slice(0, 10);
+  // Never before today: a wedding soon would otherwise pre-fill haldi/mehndi in the past.
+  const today = todayIST();
+  const shift = (d: string) => {
+    const day = new Date(Date.parse(`${d}T00:00:00Z`) - base + target).toISOString().slice(0, 10);
+    return day < today ? today : day;
+  };
 
   const invite = await Invite.create({
     owner: new Types.ObjectId(auth.userId),

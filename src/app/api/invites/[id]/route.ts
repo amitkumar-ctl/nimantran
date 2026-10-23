@@ -1,3 +1,4 @@
+import { pastDateErrors } from '@/lib/format';
 import { revalidateTag } from 'next/cache';
 import { Invite } from '@/lib/models/Invite';
 import { Rsvp } from '@/lib/models/Rsvp';
@@ -29,7 +30,11 @@ export async function PATCH(req: Request, ctx: Ctx) {
   const invite = await findOwned((await ctx.params).id, auth.userId);
   if (!invite) return error('Invite not found', 404);
 
-  invite.set(sentKeysOnly(body.data, body.raw));
+  const changes = sentKeysOnly(body.data, body.raw);
+  // Dates changed to a day in the past are rejected; unchanged old dates are fine.
+  const past = pastDateErrors(changes, invite.toObject());
+  if (Object.keys(past).length) return error('Please pick today or a later date', 422, past);
+  invite.set(changes);
   await invite.save();
   // Guests see the change on their next visit (no stale copy).
   revalidateTag(inviteTag(invite.slug), { expire: 0 });
