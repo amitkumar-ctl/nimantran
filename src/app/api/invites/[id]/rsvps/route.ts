@@ -1,5 +1,6 @@
 import { Invite } from '@/lib/models/Invite';
 import { Rsvp } from '@/lib/models/Rsvp';
+import { Shagun } from '@/lib/models/Shagun';
 import { error, json, requireUser, validId } from '@/lib/api-helpers';
 import type { RsvpData } from '@/lib/types';
 
@@ -30,10 +31,17 @@ export async function GET(req: Request, ctx: RouteContext<'/api/invites/[id]/rsv
   }));
 
   if (new URL(req.url).searchParams.get('format') === 'csv') {
-    const header = ['Name', 'Phone', 'Attending', 'Guests', 'Functions', 'Dietary needs', 'Message', 'Responded at'];
+    // Shagun linked to each guest (received + reported by the guest).
+    const shagun = new Map<string, number>();
+    for (const s of await Shagun.find({ invite: invite._id, rsvp: { $ne: null } }, { rsvp: 1, amount: 1 }).lean()) {
+      shagun.set(String(s.rsvp), (shagun.get(String(s.rsvp)) ?? 0) + s.amount);
+    }
+    const header = ['Name', 'Phone', 'Attending', 'Guests', 'Functions', 'Dietary needs', 'Message', 'Shagun (₹)', 'Responded at'];
     const lines = rsvps.map((r) =>
-      [r.name, r.phone, r.attending ? 'Yes' : 'No', r.attending ? r.guests : 0, r.events.join(', '), r.dietary, r.message, r.createdAt].map(csvCell).join(','),
+      [r.name, r.phone, r.attending ? 'Yes' : 'No', r.attending ? r.guests : 0, r.events.join(', '), r.dietary, r.message, shagun.get(r.id) ?? '', r.createdAt].map(csvCell).join(','),
     );
+    const people = rsvps.filter((r) => r.attending).reduce((n, r) => n + r.guests, 0);
+    lines.push('', [csvCell('Total people coming'), '', '', csvCell(people)].join(','));
     const csv = '﻿' + [header.map(csvCell).join(','), ...lines].join('\r\n'); // BOM so Excel reads Hindi names
     return new Response(csv, {
       headers: {

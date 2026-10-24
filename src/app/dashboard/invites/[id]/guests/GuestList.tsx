@@ -2,15 +2,18 @@
 
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Download, RefreshCw, Search } from 'lucide-react';
+import { ArrowLeft, Download, IndianRupee, Plus, RefreshCw, Search, Users } from 'lucide-react';
 import { api, queryKeys } from '@/lib/api-client';
 import { PageLink } from '@/components/ui/PageLink';
+import { inr, ShagunRegister, type Prefill } from './ShagunRegister';
 
 type Filter = 'all' | 'yes' | 'no';
 
 export function GuestList({ id }: { id: string }) {
   const invite = useQuery({ queryKey: queryKeys.invite(id), queryFn: () => api.getInvite(id) });
   const rsvps = useQuery({ queryKey: queryKeys.rsvps(id), queryFn: () => api.listRsvps(id), refetchInterval: 60_000 });
+  const shagun = useQuery({ queryKey: queryKeys.shagun(id), queryFn: () => api.listShagun(id), refetchInterval: 60_000 });
+  const [prefill, setPrefill] = useState<Prefill>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
 
@@ -19,14 +22,39 @@ export function GuestList({ id }: { id: string }) {
     const yes = list.filter((r) => r.attending);
     const perEvent = new Map<string, number>();
     for (const r of yes) for (const e of r.events) perEvent.set(e, (perEvent.get(e) ?? 0) + r.guests);
+    const entries = shagun.data ?? [];
+    const received = entries.filter((e) => e.confirmed);
+    const toCheck = entries.filter((e) => !e.confirmed);
+    // Shagun per guest (linked entries), for the Shagun column.
+    const byRsvp = new Map<string, { amount: number; confirmed: boolean }>();
+    for (const e of entries) {
+      if (!e.rsvpId) continue;
+      const cur = byRsvp.get(e.rsvpId) ?? { amount: 0, confirmed: true };
+      byRsvp.set(e.rsvpId, { amount: cur.amount + e.amount, confirmed: cur.confirmed && e.confirmed });
+    }
     return {
       responses: list.length,
       attending: yes.length,
       declined: list.length - yes.length,
       headcount: yes.reduce((n, r) => n + r.guests, 0),
       perEvent,
+      received: received.reduce((n, e) => n + e.amount, 0),
+      receivedCount: received.length,
+      toCheck: toCheck.reduce((n, e) => n + e.amount, 0),
+      toCheckCount: toCheck.length,
+      byRsvp,
     };
-  }, [rsvps.data]);
+  }, [rsvps.data, shagun.data]);
+
+  const addFor = (name: string, rsvpId: string) => {
+    setPrefill({ name, rsvpId });
+    requestAnimationFrame(() => document.getElementById('shagun')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  };
+  const shagunCell = (r: { id: string; name: string }) => {
+    const s = stats.byRsvp.get(r.id);
+    if (s) return <span className="whitespace-nowrap font-semibold">{inr(s.amount)} <span className={s.confirmed ? 'text-green-700' : 'text-amber-700'} title={s.confirmed ? 'Received' : 'Reported by guest, to check'}>{s.confirmed ? '✓' : '•'}</span></span>;
+    return <button type="button" className="text-xs font-semibold text-maroon hover:underline" onClick={() => addFor(r.name, r.id)}><Plus className="inline h-3 w-3" /> Add</button>;
+  };
 
   const shown = (rsvps.data ?? []).filter(
     (r) => (filter === 'all' || (filter === 'yes') === r.attending) && (!q || r.name.toLowerCase().includes(q.toLowerCase()) || r.phone.includes(q)),
@@ -41,23 +69,44 @@ export function GuestList({ id }: { id: string }) {
           {invite.data && <p className="text-muted">{invite.data.partner1} &amp; {invite.data.partner2}</p>}
         </div>
         <div className="flex gap-2">
-          <button type="button" className="btn btn-outline btn-sm" onClick={() => rsvps.refetch()} disabled={rsvps.isFetching}>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => { rsvps.refetch(); shagun.refetch(); }} disabled={rsvps.isFetching}>
             <RefreshCw className={`h-4 w-4 ${rsvps.isFetching ? 'animate-spin' : ''}`} /> Refresh
           </button>
-          <a href={`/api/invites/${id}/rsvps?format=csv`} className="btn btn-primary btn-sm"><Download className="h-4 w-4" /> Download Excel (CSV)</a>
+          <a href={`/api/invites/${id}/rsvps?format=csv`} className="btn btn-primary btn-sm"><Download className="h-4 w-4" /> Guest list (CSV)</a>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* Headline numbers: who's coming, and the shagun collected */}
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="card flex items-center gap-4 bg-gradient-to-br from-white to-cream-2/60 p-5">
+          <span className="grid h-12 w-12 flex-none place-items-center rounded-2xl bg-maroon text-white"><Users className="h-6 w-6" /></span>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">People coming</p>
+            <p className="font-display text-5xl leading-none font-semibold text-maroon-900">{rsvps.isPending ? '–' : stats.headcount}</p>
+            <p className="mt-1 text-sm text-muted">from {stats.attending} {stats.attending === 1 ? 'RSVP' : 'RSVPs'} · {stats.declined} can’t come</p>
+          </div>
+        </div>
+        <a href="#shagun" className="card flex items-center gap-4 bg-gradient-to-br from-white to-amber-50 p-5 transition hover:border-gold">
+          <span className="grid h-12 w-12 flex-none place-items-center rounded-2xl bg-gold text-white"><IndianRupee className="h-6 w-6" /></span>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Shagun received</p>
+            <p className="font-display text-5xl leading-none font-semibold text-maroon-900">{shagun.isPending ? '–' : inr(stats.received)}</p>
+            <p className="mt-1 text-sm text-muted">
+              {stats.receivedCount} {stats.receivedCount === 1 ? 'entry' : 'entries'}
+              {stats.toCheckCount > 0 && <> · <span className="font-semibold text-amber-800">{inr(stats.toCheck)} reported, to check</span></>}
+            </p>
+          </div>
+        </a>
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-3">
         {[
           ['Responses', stats.responses],
           ['Attending', stats.attending],
-          ['Total guests', stats.headcount],
           ['Can’t come', stats.declined],
         ].map(([label, value]) => (
-          <div key={label} className="card p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</p>
-            <p className="font-display text-4xl font-semibold text-maroon-900">{rsvps.isPending ? '–' : value}</p>
+          <div key={label} className="card p-3 sm:p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted sm:text-xs">{label}</p>
+            <p className="font-display text-3xl font-semibold text-maroon-900">{rsvps.isPending ? '–' : value}</p>
           </div>
         ))}
       </div>
@@ -110,6 +159,7 @@ export function GuestList({ id }: { id: string }) {
                 {r.events.length > 0 && <p className="mt-2 text-sm text-muted">{r.events.join(' · ')}</p>}
                 {r.dietary && <p className="mt-1 text-sm">🍽 {r.dietary}</p>}
                 {r.message && <p className="mt-1 text-sm italic">“{r.message}”</p>}
+                <p className="mt-2 flex items-center gap-2 border-t border-line pt-2 text-sm"><span className="text-muted">Shagun:</span> {shagunCell(r)}</p>
               </li>
             ))}
           </ul>
@@ -117,7 +167,7 @@ export function GuestList({ id }: { id: string }) {
           <div className="card mt-4 hidden overflow-x-auto md:block">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-line text-xs uppercase tracking-wide text-muted">
-                <tr>{['Name', 'Phone', 'Attending', 'Guests', 'Functions', 'Dietary', 'Message'].map((h) => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr>
+                <tr>{['Name', 'Phone', 'Attending', 'Guests', 'Functions', 'Dietary', 'Message', 'Shagun'].map((h) => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr>
               </thead>
               <tbody className="divide-y divide-line">
                 {shown.map((r) => (
@@ -129,6 +179,7 @@ export function GuestList({ id }: { id: string }) {
                     <td className="px-4 py-3 text-muted">{r.events.join(', ') || '—'}</td>
                     <td className="px-4 py-3">{r.dietary || '—'}</td>
                     <td className="max-w-64 px-4 py-3 italic text-muted">{r.message || '—'}</td>
+                    <td className="px-4 py-3">{shagunCell(r)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -136,6 +187,8 @@ export function GuestList({ id }: { id: string }) {
           </div>
         </>
       )}
+
+      <ShagunRegister inviteId={id} entries={shagun.data ?? []} rsvps={rsvps.data ?? []} prefill={prefill} onPrefillUsed={() => setPrefill(null)} />
     </div>
   );
 }

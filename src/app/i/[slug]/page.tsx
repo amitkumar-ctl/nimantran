@@ -47,7 +47,7 @@ export default async function InvitePage({ params }: Props) {
       <InviteView
         invite={invite}
         rsvpSlot={<RsvpForm slug={invite.slug} events={invite.events.map((e) => e.name)} />}
-        shagunSlot={<Shagun upiId={invite.upiId} upiName={invite.upiName} couple={couple} />}
+        shagunSlot={<Shagun upiId={invite.upiId} upiName={invite.upiName} couple={couple} slug={invite.slug} />}
       />
       <MadeWith />
     </>

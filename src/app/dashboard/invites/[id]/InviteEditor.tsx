@@ -106,7 +106,7 @@ export function InviteEditor({ id }: { id: string }) {
                   framed
                   invite={draft}
                   rsvpSlot={<RsvpForm preview slug={draft.slug} events={draft.events.map((e) => e.name)} />}
-                  shagunSlot={<Shagun upiId={draft.upiId} upiName={draft.upiName} couple={`${draft.partner1} & ${draft.partner2}`} />}
+                  shagunSlot={<Shagun upiId={draft.upiId} upiName={draft.upiName} couple={`${draft.partner1} & ${draft.partner2}`} preview />}
                 />
               </div>
             </div>

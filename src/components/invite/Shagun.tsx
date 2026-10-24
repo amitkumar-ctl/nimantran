@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Check, Copy, Download, ExternalLink, QrCode } from 'lucide-react';
 import { upiLink } from '@/lib/format';
+import { ShagunReport } from './ShagunReport';
 
 /*
  * UPI shagun.
@@ -21,7 +22,7 @@ const noSubscribe = () => () => {};
 // Desktop/laptop (precise pointer): the QR is the easiest way, so show it open.
 const useIsDesktop = () => useSyncExternalStore(noSubscribe, () => matchMedia('(pointer: fine)').matches, () => false);
 
-export function Shagun({ upiId, upiName, couple }: { upiId: string; upiName: string; couple: string }) {
+export function Shagun({ upiId, upiName, couple, slug, preview = false }: { upiId: string; upiName: string; couple: string; slug?: string; preview?: boolean }) {
   const [copied, setCopied] = useState(false);
   const isDesktop = useIsDesktop();
   const [qrToggled, setQrToggled] = useState<boolean | null>(null);
@@ -117,6 +118,8 @@ export function Shagun({ upiId, upiName, couple }: { upiId: string; upiName: str
       <p className="mt-3 text-[11px] leading-snug text-muted/80">
         Some UPI apps block payment links for safety. If “Open UPI app” doesn’t work, use Copy or the QR. Money goes straight to the couple’s account.
       </p>
+
+      <ShagunReport slug={slug} preview={preview} />
     </div>
   );
 }

@@ -36,7 +36,7 @@ export const EDITOR_TOUR: TourStep[] = [
   { target: 'ed-publish', title: 'Publish when you’re ready', body: <>Publishing makes your link live. You’ll then get <b>Copy link</b>, <b>WhatsApp</b> and <b>QR code</b> buttons.</> },
   { target: 'ed-share', title: 'Share on WhatsApp', body: <>Send the link to family groups. WhatsApp shows a preview card with your names and date.</> },
   { target: 'ed-qr', title: 'QR code for printed cards', body: <>Printing cards too? Download a ready-made QR card, or the QR alone for your printer. Guests scan it to open your invite, see the venues and RSVP, and they always see your latest changes.</> },
-  { target: 'ed-guests', title: 'Track RSVPs', body: <>See who’s coming, headcount per function, dietary needs and messages. Download the list for your caterer.</> },
+  { target: 'ed-guests', title: 'Guests & shagun', body: <>See how many people are coming, headcount per function and messages, plus your <b>shagun register</b>: totals, guests’ “I’ve sent shagun” reports to check, and cash envelopes you record.</> },
   { target: 'ed-delete', tab: 'edit', title: 'Delete if you need to', body: <>Created this invite by mistake? Delete it here. It asks you to confirm first, and removes the invite and its RSVPs for good.</> },
   { target: 'tour-replay', title: 'That’s it! 🎊', body: <>Replay this tour anytime from here. Now make it yours!</> },
 ];
