@@ -97,3 +97,20 @@ export function fieldErrors(error: z.ZodError): Record<string, string> {
   }
   return out;
 }
+
+/* ------------------------------ contact ------------------------------ */
+
+import { CONTACT_TOPICS } from './contact';
+export { CONTACT_TOPICS, CONTACT_TOPIC_LABELS } from './contact';
+export const contactSchema = z.object({
+  name: trimmed(80).min(2, 'Enter your name'),
+  email: z.email('Enter a valid email').trim().toLowerCase().max(120),
+  topic: z.enum(CONTACT_TOPICS).default('help'),
+  message: z.string().trim().min(10, 'Tell us a little more (10+ characters)').max(3000, 'Please keep it under 3,000 characters'),
+  inviteLink: trimmed(200).default(''),
+  /** Honeypot: hidden from people, filled in by bots. */
+  website: z.string().max(200).default(''),
+  /** When the form was shown (ms since epoch), to catch instant bot submits. */
+  startedAt: z.number().int().nonnegative().default(0),
+});
+export type ContactInput = z.infer<typeof contactSchema>;
