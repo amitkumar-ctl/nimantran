@@ -38,20 +38,22 @@ function categoryOf(o: Ornament, f: Frame, p: Palette): Category {
   return 'Traditional';
 }
 
-function eventsOf(o: Ornament, f: Frame): EventSet {
+type ClassicEvents = Extract<EventSet, 'north' | 'nikah' | 'south' | 'destination'>;
+
+function eventsOf(o: Ornament, f: Frame): ClassicEvents {
   if (o === 'arch' || o === 'moon') return 'nikah';
   if (o === 'lamp' || f === 'kasavu') return 'south';
   if (o === 'sun') return 'destination';
   return 'north';
 }
 
-const BLESSING: Record<EventSet, string[]> = {
+const BLESSING: Record<ClassicEvents, string[]> = {
   north: ['॥ शुभ विवाह ॥', '॥ श्री गणेशाय नमः ॥', 'Together with our families'],
   nikah: ['Nikah Mubarak', 'Bismillah', 'With the blessings of Allah'],
   south: ['Shubha Vivaham', 'Subha Muhurtham', 'With the blessings of elders'],
   destination: ['Save the date', 'Join us by the sea', 'Together with our families'],
 };
-const PLACES: Record<EventSet, [string, string][]> = {
+const PLACES: Record<ClassicEvents, [string, string][]> = {
   north: [['Jaipur', 'Rambagh Palace, Jaipur'], ['Delhi', 'The Grand Lawns, New Delhi'], ['Udaipur', 'Lake Palace Gardens, Udaipur'], ['Lucknow', 'Taj Mahal Lucknow'], ['Amritsar', 'Hyatt Regency, Amritsar'], ['Ahmedabad', 'Courtyard Lawns, Ahmedabad']],
   nikah: [['Hyderabad', 'Taj Falaknuma, Hyderabad'], ['Lucknow', 'Awadh Banquets, Lucknow'], ['Bhopal', 'Noor-Us-Sabah Palace, Bhopal'], ['Mumbai', 'Sea Breeze Lawns, Mumbai']],
   south: [['Chennai', 'Sri Kalyana Mandapam, Chennai'], ['Kochi', 'Bolgatty Palace, Kochi'], ['Bengaluru', 'Palace Grounds, Bengaluru'], ['Madurai', 'Meenakshi Mahal, Madurai'], ['Hyderabad', 'N Convention, Hyderabad']],
@@ -64,7 +66,7 @@ const BEST_FOR: Record<Category, string> = {
   Destination: 'Beach & destination weddings',
 };
 const FRAME_WORD: Record<Frame, string> = { double: 'Classic', corners: 'Flourish', arch: 'Jharokha', toran: 'Toran', kasavu: 'Kasavu', single: 'Minimal' };
-const EVENT_WORDS: Record<EventSet, string[]> = {
+const EVENT_WORDS: Record<ClassicEvents, string[]> = {
   north: ['hindu', 'north indian', 'punjabi', 'marwari', 'shaadi', 'vivah'],
   nikah: ['nikah', 'muslim', 'walima', 'islamic', 'urdu'],
   south: ['south indian', 'tamil', 'telugu', 'kannada', 'malayali', 'kerala', 'vivaham'],
@@ -108,7 +110,7 @@ export function buildGenerated(id: string): TemplateInfo | null {
   const name = `${p.name} ${o.name} ${FRAME_WORD[f.id]}${s.id === 'serif' ? ' Engraved' : ''}`;
 
   return {
-    id, name, category, events, featured: false,
+    id, name, category, events, featured: false, layout: 'classic', lang: /[\u0900-\u097F]/.test(blessing) ? 'hi' : 'en',
     ornament: o.id, frame: f.id, nameStyle: s.id, dark: p.dark, colors: p.colors,
     tagline: `${p.mood[0].toUpperCase()}${p.mood.slice(1)} ${p.name.toLowerCase()} · ${f.name.toLowerCase()}`,
     description: `${/^[aeiou]/.test(p.mood) ? 'An' : 'A'} ${p.mood} ${p.name.toLowerCase()} design with a ${o.name.toLowerCase()} crest, ${f.name.toLowerCase()} and ${s.id === 'serif' ? 'engraved serif' : 'flowing script'} names. ${BEST_FOR[category]}.`,

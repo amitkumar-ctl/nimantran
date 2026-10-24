@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Check } from 'lucide-react';
-import { allTemplates, FEATURED_IDS, getTemplate, isTheme, templateCount, type TemplateInfo } from '@/lib/themes';
+import { allTemplates, designLanguage, FEATURED_IDS, getTemplate, isTheme, templateCount, type TemplateInfo } from '@/lib/themes';
 import { EVENT_SETS } from '@/lib/sample';
 import { absoluteUrl } from '@/config/site';
 import { PhonePreview } from '@/components/marketing/PhonePreview';
@@ -26,6 +26,16 @@ export function generateStaticParams() {
 
 /** Same palette with other motifs, then the same motif in other colours. */
 function similar(info: TemplateInfo, n = 8): TemplateInfo[] {
+  if (info.layout !== 'classic') {
+    // Same tradition in the other looks, then this look in other languages.
+    const pool = allTemplates().filter((t) => t.id !== info.id);
+    const sameCulture = pool.filter((t) => t.culture === info.culture && t.layout !== info.layout);
+    const byLook = new Map<string, TemplateInfo>();
+    for (const t of sameCulture) if (!byLook.has(t.layout)) byLook.set(t.layout, t);
+    const otherLang = pool.filter((t) => t.layout === info.layout && t.lang !== info.lang);
+    const seen = new Set<string>();
+    return [...byLook.values(), ...otherLang.filter((t) => !seen.has(t.lang) && seen.add(t.lang))].slice(0, n);
+  }
   const palette = info.featured ? null : info.id.split('-')[1];
   const pool = allTemplates().filter((t) => t.id !== info.id);
   const out = new Map<string, TemplateInfo>();
@@ -74,7 +84,7 @@ export default async function TemplatePage({ params }: Props) {
       </nav>
       <div className="grid items-center gap-12 lg:grid-cols-2">
         <div>
-          <p className="mb-2 inline-block rounded-full bg-cream-2 px-3 py-1 text-xs font-semibold text-maroon">{info.category}</p>
+          <p className="mb-2 inline-block rounded-full bg-cream-2 px-3 py-1 text-xs font-semibold text-maroon">{info.category}{info.lang !== 'en' && <> · {designLanguage(info).name} <span lang={info.lang}>({designLanguage(info).native})</span></>}</p>
           <h1 className="font-display text-4xl font-semibold text-maroon-900 sm:text-5xl">{info.name} wedding invitation</h1>
           <p className="mt-2 font-display text-xl italic text-muted">{info.tagline}</p>
           <p className="mt-5 text-lg text-ink/80">{info.description}</p>
@@ -85,7 +95,7 @@ export default async function TemplatePage({ params }: Props) {
           </div>
           <h2 className="mt-8 font-display text-2xl font-semibold text-maroon-900">Included with this design</h2>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-            {['Your names & blessing line', 'All functions with venues', 'Google Maps link per venue', 'Live countdown to muhurat', 'RSVP with headcount per function', 'UPI shagun button', 'WhatsApp preview card', 'Edit anytime, same link'].map((f) => (
+            {[info.layout === 'lifafa' ? 'Envelope addressed to each family' : 'Your names & blessing line', 'All functions with venues', 'Google Maps link per venue', 'Live countdown to muhurat', 'RSVP with headcount per function', 'UPI shagun button', 'WhatsApp preview card', 'Edit anytime, same link'].map((f) => (
               <li key={f} className="flex items-center gap-2 text-ink/85"><Check className="h-4 w-4 flex-none text-green-700" /> {f}</li>
             ))}
           </ul>
@@ -103,7 +113,7 @@ export default async function TemplatePage({ params }: Props) {
                 <ThemeSwatch theme={t.id} />
                 <span className="block p-3">
                   <span className="block font-display text-base font-semibold text-maroon-900 group-hover:underline sm:text-lg">{t.name}</span>
-                  <span className="block text-xs text-muted sm:text-sm">{t.category}</span>
+                  <span className="block text-xs text-muted sm:text-sm">{t.layout === 'classic' ? t.category : t.tagline}</span>
                 </span>
               </DesignLink>
             </li>

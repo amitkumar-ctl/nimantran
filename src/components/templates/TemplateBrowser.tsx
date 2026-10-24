@@ -9,13 +9,15 @@ import {
   type TemplateFilters, type TemplateInfo, type Theme,
 } from '@/lib/themes';
 import { ORNAMENTS } from '@/lib/templates/parts';
+import { LANGUAGES, scriptProps } from '@/lib/templates/languages';
+import { LAYOUTS } from '@/lib/templates/styles';
 import { ThemeSwatch } from '@/components/invite/ThemeSwatch';
 
 type BrowseProps = { mode?: 'browse'; initialQuery?: string; syncUrl?: boolean };
 type PickProps = { mode: 'pick'; selected: Theme; onSelect: (id: Theme) => void; names?: [string, string] };
 type Props = (BrowseProps | PickProps) & { pageSize?: number; className?: string };
 
-const SUGGESTIONS = ['red', 'pastel', 'nikah', 'south indian', 'haldi', 'royal blue', 'black gold', 'lotus', 'engagement', 'beach'];
+const SUGGESTIONS = ['envelope', 'bollywood', 'palace', 'tamil', 'bengali', 'nikah', 'punjabi', 'art deco', 'watercolour', 'red', 'pastel', 'haldi'];
 
 /** Search + filter the whole catalogue (thousands of designs) instantly, in the browser. */
 export function TemplateBrowser(props: Props) {
@@ -39,7 +41,8 @@ export function TemplateBrowser(props: Props) {
   const [shown, setShown] = useState({ key, n: pageSize });
   const visible = shown.key === key ? shown.n : pageSize;
 
-  const activeFilters = Object.values(filters).filter(Boolean).length;
+  const activeFilters = Object.entries(filters).filter(([k, v]) => v && k !== 'lang').length;
+  const anyFilter = activeFilters > 0 || !!filters.lang;
   const stale = query !== deferredQuery;
 
   function changeQuery(q: string) {
@@ -61,7 +64,7 @@ export function TemplateBrowser(props: Props) {
           <Search className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-muted" />
           <input
             type="search" className="input pl-10" value={query} autoComplete="off"
-            placeholder={`Search ${templateCount().toLocaleString('en-IN')} designs: “red lotus”, “nikah”, “pastel”…`}
+            placeholder={`Search ${templateCount().toLocaleString('en-IN')} designs: “tamil”, “envelope”, “red lotus”…`}
             onChange={(e) => changeQuery(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
           />
@@ -72,11 +75,24 @@ export function TemplateBrowser(props: Props) {
         </button>
       </div>
 
+      {/* Language is the first thing most families decide, so it's always on show. */}
+      <div className="-mx-1 mt-3 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]" role="group" aria-label="Language">
+        <Chip on={!filters.lang} onClick={() => setFilters((f) => ({ ...f, lang: undefined }))}>All languages</Chip>
+        {LANGUAGES.map((l) => {
+          const sp = scriptProps(l.native);
+          return (
+            <Chip key={l.code} on={filters.lang === l.code} onClick={() => toggle('lang', l.code)}>
+              {l.code === 'en' ? 'English' : <><span lang={sp.lang} dir={sp.dir} className={sp.className}>{l.native}</span><span className="text-xs text-muted">{l.name}</span></>}
+            </Chip>
+          );
+        })}
+      </div>
+
       {selectedId && (
         <p className="mt-3 text-sm">Selected: <strong className="text-maroon-900">{getTemplate(selectedId).name}</strong></p>
       )}
 
-      {!query && !activeFilters && (
+      {!query && !anyFilter && (
         <div className="mt-3 flex flex-wrap items-center gap-1.5 text-sm">
           <span className="text-muted">Try:</span>
           {SUGGESTIONS.map((s) => <button key={s} type="button" className="chip bg-white hover:border-gold" onClick={() => changeQuery(s)}>{s}</button>)}
@@ -85,6 +101,9 @@ export function TemplateBrowser(props: Props) {
 
       {showFilters && (
         <div className="mt-3 space-y-3 rounded-2xl border border-line bg-white p-4">
+          <FilterRow label="Look">
+            {LAYOUTS.map((l) => <Chip key={l.id} on={filters.layout === l.id} onClick={() => toggle('layout', l.id)}>{l.name}</Chip>)}
+          </FilterRow>
           <FilterRow label="Style">
             {CATEGORIES.map((c) => <Chip key={c} on={filters.category === c} onClick={() => toggle('category', c)}>{c}</Chip>)}
           </FilterRow>
@@ -100,18 +119,19 @@ export function TemplateBrowser(props: Props) {
             <Chip on={filters.nameStyle === 'script'} onClick={() => toggle('nameStyle', 'script')}>Calligraphy</Chip>
             <Chip on={filters.nameStyle === 'serif'} onClick={() => toggle('nameStyle', 'serif')}>Engraved capitals</Chip>
           </FilterRow>
-          {activeFilters > 0 && <button type="button" className="btn btn-ghost btn-sm" onClick={() => setFilters({})}><X className="h-3.5 w-3.5" /> Clear filters</button>}
+          {activeFilters > 0 && <button type="button" className="btn btn-ghost btn-sm" onClick={() => setFilters((f) => ({ lang: f.lang }))}><X className="h-3.5 w-3.5" /> Clear filters</button>}
         </div>
       )}
 
       <p className="mt-4 mb-3 text-sm text-muted" aria-live="polite">
         {results.length ? `${results.length.toLocaleString('en-IN')} design${results.length === 1 ? '' : 's'}` : 'No designs match.'}
-        {(query || activeFilters > 0) && results.length > 0 && <> · <button type="button" className="underline" onClick={() => { changeQuery(''); setFilters({}); }}>show all</button></>}
+        {filters.lang && <> in {LANGUAGES.find((l) => l.code === filters.lang)?.name}</>}
+        {(query || anyFilter) && results.length > 0 && <> · <button type="button" className="underline" onClick={() => { changeQuery(''); setFilters({}); }}>show all</button></>}
       </p>
 
       {results.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-line p-8 text-center text-muted">
-          Try a colour (red, pastel, gold), a tradition (nikah, south indian, haldi) or a motif (lotus, peacock, rings).
+          Try a colour (red, pastel, gold), a tradition (nikah, tamil, punjabi), a look (envelope, bollywood, palace) or another language.
         </div>
       ) : (
         <ul className={`grid gap-3 sm:gap-4 ${picking ? 'grid-cols-2 sm:grid-cols-3 xl:grid-cols-4' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'} ${stale ? 'opacity-60' : ''}`}>
@@ -152,7 +172,7 @@ export function BrowseCard({ t }: { t: TemplateInfo }) {
       <ThemeSwatch theme={t.id} size="lg" />
       <span className="block p-3 sm:p-4">
         <span className="block font-display text-lg leading-snug font-semibold text-maroon-900 group-hover:underline">{t.name}</span>
-        <span className="block text-xs text-muted sm:text-sm">{t.featured ? t.tagline : t.category}</span>
+        <span className="block text-xs text-muted sm:text-sm">{t.featured || t.layout !== 'classic' ? t.tagline : t.category}</span>
       </span>
     </DesignLink>
   );

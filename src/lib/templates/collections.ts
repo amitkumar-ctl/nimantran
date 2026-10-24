@@ -5,7 +5,7 @@ import type { TemplateFilters } from '../themes';
  * with its own heading and intro, targeting what people actually search for
  * ("red wedding invitation", "nikah card", "south indian wedding invite"…).
  */
-export type Collection = { slug: string; title: string; h1: string; intro: string; query?: string; filters?: TemplateFilters };
+export type Collection = { slug: string; title: string; h1: string; intro: string; query?: string; filters?: TemplateFilters; kind?: 'colour' | 'tradition' | 'language' | 'look' | 'motif' };
 
 export const COLLECTIONS: Collection[] = [
   { slug: 'red', title: 'Red Wedding Invitation Templates', h1: 'Red wedding invitations', query: 'red', intro: 'Maroon, ruby, wine and sindoor red: the colour of Indian weddings. Classic, auspicious and always festive.' },
@@ -35,4 +35,49 @@ export const COLLECTIONS: Collection[] = [
   { slug: 'modern-engraved', title: 'Modern Engraved Wedding Invitation Templates', h1: 'Modern engraved invitations', filters: { nameStyle: 'serif' }, intro: 'Your names in engraved serif capitals: formal, modern and beautifully clean.' },
 ];
 
+const lang = (slug: string, code: TemplateFilters['lang'], name: string, native: string, intro: string): Collection => ({
+  slug, kind: 'language', filters: { lang: code },
+  title: `${name} Wedding Invitation Templates (${native})`, h1: `${name} wedding invitations`, intro,
+});
+const look = (slug: string, layout: TemplateFilters['layout'], title: string, h1: string, intro: string): Collection => ({ slug, kind: 'look', filters: { layout }, title, h1, intro });
+const tradition = (slug: string, culture: string, title: string, h1: string, intro: string): Collection => ({ slug, kind: 'tradition', filters: { culture }, title, h1, intro });
+
+// Every language, every look and the traditions not covered above.
+COLLECTIONS.push(
+  lang('hindi', 'hi', 'Hindi', 'हिन्दी', 'Designs that open with “॥ शुभ विवाह ॥” or “॥ श्री गणेशाय नमः ॥” in Devanagari, with headings in Hindi and English.'),
+  lang('marathi', 'mr', 'Marathi', 'मराठी', 'Marathi invitations that open with “॥ शुभमंगल सावधान ॥”, with Sakharpuda, Haldi and Lagna ready to fill in.'),
+  lang('gujarati', 'gu', 'Gujarati', 'ગુજરાતી', 'Gujarati invitations with “શુભ લગ્ન”, and Mandvo, Pithi, Garba night and Lagna already listed.'),
+  lang('punjabi', 'pa', 'Punjabi', 'ਪੰਜਾਬੀ', 'Gurmukhi invitations opening with “ੴ ਸਤਿ ਨਾਮੁ” or “ਅਨੰਦ ਕਾਰਜ”, with Chunni, Jaggo and Anand Karaj included.'),
+  lang('bengali', 'bn', 'Bengali', 'বাংলা', 'Bengali invitations with “শুভ বিবাহ”, and Aiburobhat, Gaye Holud, Biye and Bou Bhaat ready to go.'),
+  lang('assamese', 'as', 'Assamese', 'অসমীয়া', 'Assamese invitations with “শুভ বিবাহ” and a warm “সাদৰ নিমন্ত্ৰণ”, with Juroon, Pani Tola and Biya included.'),
+  lang('odia', 'or', 'Odia', 'ଓଡ଼ିଆ', 'Odia invitations opening with “ଶୁଭ ବିବାହ” and headings in Odia and English.'),
+  lang('tamil', 'ta', 'Tamil', 'தமிழ்', 'Tamil invitations with “சுப முகூர்த்தம்”, temple kolam designs and the muhurtham highlighted.'),
+  lang('telugu', 'te', 'Telugu', 'తెలుగు', 'Telugu invitations opening with “శ్రీరస్తు శుభమస్తు” or “శుభ వివాహం”, with Pellikuthuru and Pelli ready to fill in.'),
+  lang('kannada', 'kn', 'Kannada', 'ಕನ್ನಡ', 'Kannada invitations with “ಶುಭ ವಿವಾಹ”, from temple gopurams to modern editorial designs.'),
+  lang('malayalam', 'ml', 'Malayalam', 'മലയാളം', 'Malayalam invitations with “ശുഭവിവാഹം”, kasavu bands and temple lamps.'),
+  lang('urdu', 'ur', 'Urdu', 'اردو', 'Urdu invitations in Nastaliq, opening with Bismillah, with Mehndi, Nikah and Walima included.'),
+  lang('english', 'en', 'English', 'English', 'Invitations written fully in English, for modern, Christian, Parsi, destination and mixed-language weddings.'),
+  look('envelope', 'lifafa', 'Envelope Opening Wedding Invitation Templates', 'Envelope invitations', 'A sealed velvet envelope with a wax seal of your initials. Guests tap to open it, and personal links address it to each family by name.'),
+  look('bollywood', 'filmy', 'Bollywood Poster Wedding Invitation Templates', 'Bollywood poster invitations', 'Your love story as a film poster: marquee lights, an illustrated couple and functions as scenes on a film strip.'),
+  look('palace', 'rajwada', 'Royal Palace Wedding Invitation Templates', 'Palace invitations', 'An illustrated palace at night with fireworks and elephants, and functions written on parchment scrolls.'),
+  look('watercolour', 'bagh', 'Watercolour Floral Wedding Invitation Templates', 'Watercolour invitations', 'Hand-painted flowers, flowing script names and functions pinned up like little cards.'),
+  look('modern-editorial', 'patrika', 'Modern Editorial Wedding Invitation Templates', 'Modern editorial invitations', 'Magazine-cover typography with a huge date, for couples who want something clean and not traditional.'),
+  look('art-deco', 'mehfil', 'Art Deco Wedding Invitation Templates', 'Art Deco invitations', 'Gold sunbursts, stepped frames and ticket passes for every function. Made for sangeet and reception nights.'),
+  look('temple', 'kovil', 'South Indian Temple Wedding Invitation Templates', 'Temple wedding invitations', 'A golden gopuram, kolam border and kasavu band, with the muhurtham highlighted on a bell timeline.'),
+  look('mughal-jaali', 'jaali', 'Mughal Jaali Nikah Invitation Templates', 'Mughal jaali invitations', 'A carved lattice arch with crescent and star, and each function in its own arched niche.'),
+  tradition('sikh-anand-karaj', 'punjabi', 'Sikh Anand Karaj Invitation Templates', 'Anand Karaj invitations', 'Punjabi invitations with the Anand Karaj at the gurdwara, plus Chunni, Mehndi, Jaggo and reception.'),
+  tradition('christian', 'christian', 'Christian Wedding Invitation Templates', 'Christian wedding invitations', 'Holy Matrimony invitations for church weddings, with the engagement and reception included.'),
+  tradition('parsi', 'parsi', 'Parsi Wedding Invitation Templates', 'Parsi wedding invitations', '“Ushta Te”: Parsi invitations with Madhavsaro, Lagan and dinner ready to fill in.'),
+  tradition('jain', 'jain', 'Jain Wedding Invitation Templates', 'Jain wedding invitations', 'Invitations that open with “॥ जय जिनेन्द्र ॥” or the Navkar Mantra.'),
+  tradition('buddhist', 'buddhist', 'Buddhist Wedding Invitation Templates', 'Buddhist wedding invitations', 'Marathi invitations that open with “॥ नमो बुद्धाय ॥”.'),
+  tradition('rajasthani', 'rajasthani', 'Rajasthani Wedding Invitation Templates', 'Rajasthani wedding invitations', '“पधारो म्हारे देस”: royal Rajasthani and Marwari invitations for palace weddings in Jaipur, Udaipur and Jodhpur.'),
+);
+
 export const getCollection = (slug: string) => COLLECTIONS.find((c) => c.slug === slug);
+
+/** Collections of the same kind first (other languages for a language page…), then a mix. */
+export function relatedCollections(c: Collection, n = 16) {
+  const others = COLLECTIONS.filter((x) => x.slug !== c.slug);
+  const same = others.filter((x) => x.kind === c.kind);
+  return [...same, ...others.filter((x) => x.kind !== c.kind)].slice(0, n);
+}

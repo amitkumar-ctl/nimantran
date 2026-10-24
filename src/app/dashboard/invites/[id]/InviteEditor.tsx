@@ -18,6 +18,8 @@ import { goToPage, PageLink } from '@/components/ui/PageLink';
 import { DeleteInvite } from '@/components/invite/DeleteInvite';
 import { QrCodeButton } from '@/components/invite/QrCodeButton';
 import { getTemplate } from '@/lib/themes';
+import { BLESSING_SUGGESTIONS, DEFAULT_BLESSINGS, getLanguage } from '@/lib/templates/languages';
+import { FamilyLinkButton } from '@/components/invite/FamilyLinkButton';
 import { GuidedTour, TourButton } from '@/components/tour/GuidedTour';
 import { EDITOR_TOUR } from '@/components/tour/tours';
 
@@ -152,6 +154,7 @@ function EditorTopBar({ draft, dirty, saving, onSave, saveError }: {
               <button type="button" className="btn btn-outline btn-sm" onClick={copy}>{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} {copied ? 'Copied' : 'Copy link'}</button>
               <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn-sm bg-[#25D366] text-white"><Share2 className="h-4 w-4" /> WhatsApp</a>
               <QrCodeButton link={link} slug={draft.slug} names={`${draft.partner1} & ${draft.partner2}`} colour={getTemplate(draft.theme).colors.heading} />
+              {getTemplate(draft.theme).layout === 'lifafa' && <FamilyLinkButton link={link} couple={`${draft.partner1} & ${draft.partner2}`} />}
             </span>
           )}
           <button type="button" data-tour="ed-save" className="btn btn-outline btn-sm" disabled={!dirty || saving} onClick={() => onSave({})}>
@@ -209,7 +212,14 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="partner1" label="Partner 1" error={errors.partner1}><input {...text('partner1')} /></Field>
           <Field id="partner2" label="Partner 2" error={errors.partner2}><input {...text('partner2')} /></Field>
-          <Field id="blessing" label="Blessing (top line)"><input {...text('blessing')} lang="hi" placeholder="॥ शुभ विवाह ॥" /></Field>
+          <Field id="blessing" label="Blessing (top line)">
+            {/* Any language: suggestions in every script, or type your own. */}
+            <input {...text('blessing')} dir="auto" list="blessing-options" placeholder="॥ शुभ विवाह ॥" />
+            <datalist id="blessing-options">
+              {BLESSING_SUGGESTIONS.map((b) => <option key={b.text} value={b.text}>{getLanguage(b.lang).name}</option>)}
+            </datalist>
+            <p className="mt-1 text-xs text-muted">Pick one in your language from the list, or type your own.</p>
+          </Field>
           <div className="sm:col-span-2">
             <Field id="message" label="Invitation message"><textarea {...text('message')} rows={2} className="input resize-none" /></Field>
           </div>
@@ -226,7 +236,11 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
       </Section>
 
       <Section title="Design" tour="ed-design">
-        <TemplateBrowser mode="pick" pageSize={8} selected={draft.theme} onSelect={(theme) => update({ theme })} names={[draft.partner1 || 'A', draft.partner2 || 'B']} />
+        <TemplateBrowser mode="pick" pageSize={8} selected={draft.theme} onSelect={(theme) => update({
+          theme,
+          // Swap the top line to the new design's language, unless the couple wrote their own.
+          ...(!draft.blessing.trim() || DEFAULT_BLESSINGS.has(draft.blessing.trim()) ? { blessing: getTemplate(theme).sample.blessing } : {}),
+        })} names={[draft.partner1 || 'A', draft.partner2 || 'B']} />
       </Section>
 
       <Section title="Functions" tour="ed-functions" hint="Add every ceremony. Guests can choose which ones they'll attend.">

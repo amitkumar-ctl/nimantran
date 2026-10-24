@@ -8,6 +8,8 @@ import { absoluteUrl } from '@/config/site';
 import { Divider } from './Mandala';
 import { Crest, HeroFrame, initialsOf, nameClass } from './Ornaments';
 import { getTemplate, themeVars } from '@/lib/themes';
+import { STYLE_VIEWS } from './styles';
+import { NativeLine, ScriptText } from './styles/common';
 
 const EVENT_TINTS = ['#fdf1c7', '#e3f2df', '#f6e1ec', '#f9dede', '#e4e6f7', '#e6f3f7', '#f3eadf'];
 
@@ -34,7 +36,30 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
   const H3 = framed ? 'p' : 'h3';
   const design = getTemplate(invite.theme);
   const theme = design.id;
-  const hindiBlessing = /[\u0900-\u097F]/.test(invite.blessing);
+
+  // Styled looks (palace, envelope, temple…) draw their own hero and functions.
+  if (design.layout !== 'classic') {
+    const view = STYLE_VIEWS[design.layout];
+    const props = { invite, design, framed, link, H1, H2, H3 } as const;
+    return (
+      <div style={themeVars(theme)} className="bg-inv-surface text-ink">
+        <view.Hero {...props} />
+        {invite.events.length > 0 && <view.Events {...props} />}
+        {(rsvpSlot || shagunSlot) && (
+          <section id="rsvp" className={view.rsvp.section} style={view.rsvp.style}>
+            <div className="mx-auto max-w-md">
+              <H2 className={`text-center ${view.rsvp.titleClass}`}>{view.rsvp.title}</H2>
+              <NativeLine design={design} kind="welcome" className="mt-1 text-center text-lg text-inv-primary" />
+              {invite.rsvpDeadline && <p className={`mt-1 mb-6 text-center ${view.rsvp.subClass}`}>Kindly RSVP by {formatLongDate(invite.rsvpDeadline)}</p>}
+              {!invite.rsvpDeadline && <div className="mb-6" />}
+              {rsvpSlot}
+              {shagunSlot}
+            </div>
+          </section>
+        )}
+      </div>
+    );
+  }
   // Long names shrink so they stay inside the border on small phones.
   const longest = Math.max(invite.partner1.length, invite.partner2.length);
   // Long names step down in size. The phone-frame preview always uses the
@@ -58,10 +83,10 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
 
         <Crest ornament={design.ornament} initials={initialsOf(invite.partner1, invite.partner2)} className="relative mb-2 h-24 w-24 animate-fade-up text-inv-accent sm:h-36 sm:w-36" />
         {invite.blessing && (
-          <p lang={hindiBlessing ? 'hi' : undefined}
-            className={`relative mb-4 tracking-wide text-inv-accent sm:mb-6 ${hindiBlessing ? 'font-hindi text-xl sm:text-[22px]' : 'font-display text-xl font-semibold uppercase tracking-[0.2em] sm:text-2xl'}`}>
-            {invite.blessing}
-          </p>
+          // Any script: Devanagari, Tamil, Bengali, Urdu… gets its own font and lang.
+          <ScriptText text={invite.blessing}
+            className="relative mb-4 text-xl tracking-wide text-inv-accent sm:mb-6 sm:text-[22px]"
+            latinClass="font-display font-semibold uppercase tracking-[0.2em] sm:text-2xl" />
         )}
         {invite.message && (
           <p className={`relative max-w-sm font-display text-base italic leading-relaxed opacity-90 ${framed ? '' : 'sm:text-lg'}`}>{invite.message}</p>

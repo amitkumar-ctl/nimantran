@@ -1,18 +1,23 @@
 import type { CSSProperties } from 'react';
 import { FEATURED, FEATURED_IDS, type FeaturedId } from './templates/featured';
-import { buildGenerated, FAMILY, generatedIds } from './templates/generator';
+import { buildGenerated, FAMILY, generatedIds, hash } from './templates/generator';
 import { ORNAMENTS, FRAMES } from './templates/parts';
-import type { Category, TemplateInfo } from './templates/types';
+import { buildStyled, styledIds } from './templates/styles';
+import { getLanguage, LANGUAGES, type LangCode } from './templates/languages';
+import type { Category, Layout, TemplateInfo } from './templates/types';
 
 /*
  * Every invitation design is reached through this file.
  *  - 12 hand-designed "featured" templates (templates/featured.ts)
  *  - a few thousand generated ones (templates/generator.ts), rebuilt from their id
+ *  - several hundred styled ones (templates/styles.ts): eight complete looks in
+ *    every language and tradition, also rebuilt from their id
  * Colours become CSS variables (see themeVars), which Tailwind utilities like
  * `text-inv-accent` read, so the same markup renders every design.
  */
 
-export type { Category, EventSet, Frame, NameStyle, Ornament, TemplateInfo } from './templates/types';
+export type { Category, EventSet, Frame, Layout, NameStyle, Ornament, TemplateInfo } from './templates/types';
+export type { LangCode } from './templates/languages';
 export { FEATURED_IDS };
 /** A template id: a featured id ('royal') or a generated one ('g-maroon-lotus-toran-serif'). */
 export type Theme = string;
@@ -34,7 +39,8 @@ const isFeatured = (id: string): id is FeaturedId => (FEATURED_IDS as readonly s
 function buildFeatured(id: FeaturedId): TemplateInfo {
   const f = FEATURED[id];
   return {
-    ...f, id, featured: true, nameStyle: f.nameStyle ?? 'script',
+    ...f, id, featured: true, nameStyle: f.nameStyle ?? 'script', layout: 'classic',
+    lang: /[\u0900-\u097F]/.test(f.sample.blessing) ? 'hi' : 'en', family: FEATURED_FAMILY[id],
     tags: [
       ...(f.tags ?? []), ...words(`${f.name} ${f.tagline} ${f.bestFor} ${f.description}`),
       ...(ORNAMENT_WORDS.get(f.ornament) ?? []), ...(FRAME_WORDS.get(f.frame) ?? []),
@@ -45,7 +51,7 @@ function buildFeatured(id: FeaturedId): TemplateInfo {
 
 const cache = new Map<string, TemplateInfo | null>();
 function lookup(id: string): TemplateInfo | null {
-  if (!cache.has(id)) cache.set(id, isFeatured(id) ? buildFeatured(id) : buildGenerated(id));
+  if (!cache.has(id)) cache.set(id, isFeatured(id) ? buildFeatured(id) : id.startsWith('s-') ? buildStyled(id) : buildGenerated(id));
   return cache.get(id)!;
 }
 
@@ -54,20 +60,37 @@ export const isTheme = (id: unknown): id is Theme => typeof id === 'string' && i
 /** Any template by id; unknown ids fall back to the classic design. */
 export const getTemplate = (id: string | null | undefined): TemplateInfo => (id && lookup(id)) || lookup(DEFAULT_THEME)!;
 
-export const colourFamily = (t: TemplateInfo) =>
-  t.featured ? FEATURED_FAMILY[t.id as FeaturedId] : FAMILY[t.id.split('-')[1]] ?? 'Red';
+export const colourFamily = (t: TemplateInfo) => t.family ?? FAMILY[t.id.split('-')[1]] ?? 'Red';
+
+/** One of each new look (in a different tradition each), shown first in the catalogue. */
+export const SHOWCASE_IDS = [
+  's-lifafa-hindu-maroon', 's-rajwada-rajasthani-indigo', 's-kovil-tamil-leaf', 's-filmy-hindu-pink',
+  's-patrika-modern-oxblood', 's-jaali-muslim-emerald', 's-mehfil-punjabi-emerald', 's-bagh-bengali-blush',
+];
 
 let all: TemplateInfo[] | null = null;
-/** Every template: featured first, then the generated catalogue. */
+/** Every template: one of each new look, the featured classics, every other styled design, then the generated catalogue. */
 export function allTemplates(): TemplateInfo[] {
-  all ??= [...FEATURED_IDS, ...generatedIds()].map((id) => lookup(id)!);
+  if (!all) {
+    const showcase = new Set(SHOWCASE_IDS);
+    const styled = styledIds().filter((id) => !showcase.has(id)).sort((a, b) => hash(a) - hash(b));
+    all = [...SHOWCASE_IDS, ...FEATURED_IDS, ...styled, ...generatedIds()].map((id) => lookup(id)!);
+  }
   return all;
 }
 export const templateCount = () => allTemplates().length;
 
 /* ----------------------------- search ----------------------------- */
 
-export type TemplateFilters = { category?: Category; family?: string; ornament?: string; frame?: string; nameStyle?: string; tone?: 'dark' | 'light' };
+export type TemplateFilters = {
+  category?: Category; family?: string; ornament?: string; frame?: string; nameStyle?: string; tone?: 'dark' | 'light';
+  /** Language of the top line and headings. */
+  lang?: LangCode;
+  /** One of the looks (classic crest, palace, envelope…). */
+  layout?: Layout;
+  /** Wedding tradition of a styled design. */
+  culture?: string;
+};
 
 /** Extra spellings people type, mapped onto words in our tags. */
 const SYNONYMS: Record<string, string[]> = {
@@ -78,8 +101,12 @@ const SYNONYMS: Record<string, string[]> = {
   golden: ['gold'], sunehri: ['gold'], silver: ['pearl', 'charcoal'], grey: ['gray'], gray: ['grey'],
   muslim: ['nikah'], islamic: ['nikah'], walima: ['nikah'], christian: ['church', 'rings'], church: ['christian'],
   engagement: ['rings', 'roka', 'sagai'], roka: ['engagement'], sagai: ['engagement'], ring: ['rings'],
-  tamil: ['south'], telugu: ['south'], kannada: ['south'], malayalam: ['kerala'], malayali: ['kerala'], kerala: ['kasavu'],
-  bengali: ['sindoor', 'red'], punjabi: ['north'], marathi: ['traditional'], gujarati: ['peacock'], rajasthani: ['royal', 'peacock'],
+  malayalam: ['kerala', 'malayali'], malayali: ['kerala', 'malayalam'], kerala: ['kasavu', 'malayali'],
+  bangla: ['bengali'], oriya: ['odia'], odisha: ['odia'], axomiya: ['assamese'], sikh: ['punjabi'], gurdwara: ['sikh'],
+  hindu: ['hindi'], maharashtrian: ['marathi'], andhra: ['telugu'], telangana: ['telugu'], karnataka: ['kannada'],
+  rajasthani: ['royal', 'peacock'], bollywood: ['filmy'], filmy: ['bollywood'], envelope: ['lifafa'], lifafa: ['envelope'],
+  deco: ['art'], watercolor: ['watercolour'], watercolour: ['watercolor'], palace: ['rajwada', 'mahal'], temple: ['kovil', 'gopuram'],
+  cartoon: ['caricature', 'illustrated'], caricature: ['cartoon', 'illustrated'],
   simple: ['minimal'], minimalist: ['minimal'], elegant: ['minimal', 'luxury'], luxury: ['gold', 'royal'], beach: ['sea', 'goa'],
   wedding: [], shaadi: [], invite: [], invitation: [], card: [], template: [], design: [], theme: [], and: [], with: [],
   vivah: [], marriage: [], biyah: [],
@@ -94,13 +121,18 @@ const haystack = (t: TemplateInfo) => {
 
 /** Words in a query; filler words ("wedding", "card"…) are ignored. */
 export const queryTokens = (q: string) =>
-  q.toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').split(' ').filter((w) => w && !(w in SYNONYMS && SYNONYMS[w].length === 0));
+  // A language typed in its own script (தமிழ், বাংলা…) searches by its English name.
+  LANGUAGES.reduce((acc, l) => (l.code !== 'en' && acc.includes(l.native) ? `${acc} ${l.name}` : acc), q).toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').split(' ').filter((w) => w && !(w in SYNONYMS && SYNONYMS[w].length === 0));
 
 export function matchesFilters(t: TemplateInfo, f: TemplateFilters) {
+  // Crest and border filters only describe the classic look.
   return (!f.category || t.category === f.category)
     && (!f.family || colourFamily(t) === f.family)
-    && (!f.ornament || t.ornament === f.ornament)
-    && (!f.frame || t.frame === f.frame)
+    && (!f.ornament || (t.layout === 'classic' && t.ornament === f.ornament))
+    && (!f.frame || (t.layout === 'classic' && t.frame === f.frame))
+    && (!f.lang || t.lang === f.lang)
+    && (!f.layout || t.layout === f.layout)
+    && (!f.culture || t.culture === f.culture)
     && (!f.nameStyle || t.nameStyle === f.nameStyle)
     && (!f.tone || (f.tone === 'dark') === t.dark);
 }
@@ -120,7 +152,7 @@ export function searchTemplates(query: string, filters: TemplateFilters = {}): T
   list.forEach((t, i) => {
     const hay = haystack(t);
     const name = ` ${t.name.toLowerCase()} `;
-    let score = t.featured ? 3 : 0;
+    let score = t.featured ? 3 : t.layout !== 'classic' ? 2 : 0;
     for (const tok of tokens) {
       const alts = [tok, ...(SYNONYMS[tok] ?? [])];
       if (!alts.some((a) => hay.includes(` ${a}`))) return; // every word must match
@@ -134,6 +166,9 @@ export function searchTemplates(query: string, filters: TemplateFilters = {}): T
   });
   return scored.sort((a, b) => b.score - a.score || a.i - b.i).map((s) => s.t);
 }
+
+/** Language of a design (for headings in that language). */
+export const designLanguage = (t: TemplateInfo) => getLanguage(t.lang);
 
 /* ----------------------------- styling ----------------------------- */
 
@@ -150,6 +185,8 @@ export function themeVars(theme: Theme): CSSProperties {
     '--color-inv-heading': c.heading,
     '--color-inv-surface': c.surface,
     '--color-inv-chip': c.chip,
+    ...(c.alt ? { '--color-inv-alt': c.alt } : {}),
+    ...(c.deep ? { '--color-inv-deep': c.deep } : {}),
   } as CSSProperties;
 }
 
