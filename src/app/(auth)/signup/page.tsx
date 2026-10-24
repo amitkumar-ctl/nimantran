@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { AuthForm } from '@/components/ui/AuthForm';
 
 export const metadata: Metadata = {
@@ -16,6 +17,9 @@ export default function SignupPage() {
       <Suspense fallback={<div className="card h-96 animate-pulse" />}>
         <AuthForm mode="signup" />
       </Suspense>
+      <p className="mt-4 text-center text-xs text-muted">
+        By creating an account you agree to our <Link href="/terms" className="underline">Terms of Service</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.
+      </p>
     </>
   );
 }

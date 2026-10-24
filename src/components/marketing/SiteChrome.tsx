@@ -61,6 +61,7 @@ export function SiteFooter() {
           <ul className="space-y-2 text-sm">
             <li><Link className="hover:text-white" href="/wedding-invitation-wording">Wedding invitation wording</Link></li>
             <li><Link className="hover:text-white" href="/#faq">FAQ</Link></li>
+            <li><Link className="hover:text-white" href="/contact">Help &amp; contact</Link></li>
           </ul>
         </div>
         <div>
@@ -71,7 +72,14 @@ export function SiteFooter() {
           </ul>
         </div>
       </div>
-      <p className="border-t border-white/10 py-5 text-center text-xs">© {site.name}. Made in India with ♥</p>
+      <div className="container-page flex flex-col items-center justify-between gap-2 border-t border-white/10 py-5 text-xs sm:flex-row">
+        <p>© {site.name}. Made in India with ♥</p>
+        <nav aria-label="Legal" className="flex gap-4">
+          <Link className="hover:text-white" href="/privacy">Privacy Policy</Link>
+          <Link className="hover:text-white" href="/terms">Terms of Service</Link>
+          <Link className="hover:text-white" href="/contact">Contact</Link>
+        </nav>
+      </div>
     </footer>
   );
 }

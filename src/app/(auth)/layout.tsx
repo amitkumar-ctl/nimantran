@@ -1,5 +1,5 @@
 import { Logo } from '@/components/ui/Logo';
-import { Mandala } from '@/components/invite/Mandala';
+import { BrandMark } from '@/components/ui/BrandMark';
 
 export default function AuthLayout({ children }: LayoutProps<'/'>) {
   return (

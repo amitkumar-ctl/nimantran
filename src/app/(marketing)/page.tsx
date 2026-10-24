@@ -45,7 +45,7 @@ export default function HomePage() {
     <main>
       <JsonLd
         data={[
-          { '@context': 'https://schema.org', '@type': 'Organization', name: site.name, url: absoluteUrl('/'), logo: absoluteUrl('/icon.svg') },
+          { '@context': 'https://schema.org', '@type': 'Organization', name: site.name, url: absoluteUrl('/'), logo: absoluteUrl('/brand/nimantran-mark-512.png'), email: site.supportEmail },
           { '@context': 'https://schema.org', '@type': 'WebSite', name: site.name, url: absoluteUrl('/'), inLanguage: 'en-IN' },
           {
             '@context': 'https://schema.org', '@type': 'WebApplication', name: site.name, url: absoluteUrl('/'),
