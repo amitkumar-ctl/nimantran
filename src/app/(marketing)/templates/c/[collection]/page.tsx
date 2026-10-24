@@ -2,12 +2,17 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { searchTemplates } from '@/lib/themes';
-import { COLLECTIONS, getCollection } from '@/lib/templates/collections';
+import { COLLECTIONS, getCollection, relatedCollections } from '@/lib/templates/collections';
 import { absoluteUrl } from '@/config/site';
 import { JsonLd } from '@/components/marketing/JsonLd';
 import { BrowseCard } from '@/components/templates/TemplateBrowser';
 
 type Props = PageProps<'/templates/c/[collection]'>;
+
+// The whole page depends on the URL (which design / collection), so render it
+// in one go instead of streaming a generic shell first. This also means an
+// unknown id gets a real 404 status for search engines.
+export const instant = false;
 
 const SHOWN = 48;
 
@@ -30,7 +35,7 @@ export default async function CollectionPage({ params }: Props) {
   const c = getCollection((await params).collection);
   if (!c) notFound();
   const results = searchTemplates(c.query ?? '', c.filters);
-  const related = COLLECTIONS.filter((x) => x.slug !== c.slug).slice(0, 12);
+  const related = relatedCollections(c);
   const seeAll = c.query ? `/templates?q=${encodeURIComponent(c.query)}` : '/templates';
 
   return (

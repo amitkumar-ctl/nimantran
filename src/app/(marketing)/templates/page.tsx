@@ -39,7 +39,7 @@ export default function TemplatesPage() {
       <h1 className="font-display text-4xl font-semibold text-maroon-900 sm:text-5xl">Wedding invitation templates</h1>
       <p className="mt-3 max-w-2xl text-lg text-ink/80">
         {count} designs, each a full invitation website, not just a card: all your functions, venue maps, a live countdown,
-        RSVP and UPI shagun. Search by colour, tradition or motif, and switch anytime, even after sharing.
+        RSVP and UPI shagun. Search by language, look, colour or tradition, and switch anytime, even after sharing.
       </p>
 
       <section className="mt-8" aria-label="Search designs">
@@ -50,11 +50,16 @@ export default function TemplatesPage() {
 
       <section className="mt-16" aria-labelledby="collections-title">
         <h2 id="collections-title" className="font-display text-3xl font-semibold text-maroon-900">Browse by collection</h2>
-        <ul className="mt-4 flex flex-wrap gap-2">
-          {COLLECTIONS.map((c) => (
-            <li key={c.slug}><Link href={`/templates/c/${c.slug}`} className="chip bg-white hover:border-gold">{c.h1}</Link></li>
-          ))}
-        </ul>
+        {([['language', 'By language'], ['look', 'By look'], ['tradition', 'By tradition'], [undefined, 'By colour, motif & occasion']] as const).map(([kind, label]) => (
+          <div key={label} className="mt-5">
+            <h3 className="text-sm font-semibold text-muted">{label}</h3>
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {COLLECTIONS.filter((c) => c.kind === kind).map((c) => (
+                <li key={c.slug}><Link href={`/templates/c/${c.slug}`} className="chip bg-white hover:border-gold">{c.h1}</Link></li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </section>
 
       <div className="mt-16 rounded-3xl bg-maroon-900 p-8 text-center text-cream sm:p-12">

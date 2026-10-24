@@ -10,6 +10,32 @@
   --font-display: var(--font-cormorant), Georgia, serif;
   --font-script: var(--font-vibes), cursive;
   --font-hindi: var(--font-tiro), serif;
+
+  /* Styled invitation looks (src/app/fonts.ts) */
+  --font-cinzel: var(--nf-cinzel), Georgia, serif;
+  --font-pinyon: var(--nf-pinyon), cursive;
+  --font-lora: var(--nf-lora), Georgia, serif;
+  --font-bodoni: var(--nf-bodoni), 'Didot', Georgia, serif;
+  --font-josefin: var(--nf-josefin), ui-sans-serif, sans-serif;
+  --font-limelight: var(--nf-limelight), Georgia, serif;
+  --font-poiret: var(--nf-poiret), ui-sans-serif, sans-serif;
+  --font-baloo: var(--nf-baloo), var(--nf-baloo-deva), ui-rounded, sans-serif;
+  --font-yatra: var(--nf-yatra), var(--font-tiro), serif;
+  --font-italiana: var(--nf-italiana), Georgia, serif;
+  --font-marcellus: var(--nf-marcellus), Georgia, serif;
+  --font-amiri: var(--nf-amiri), Georgia, serif;
+
+  /* Indian scripts and Arabic/Urdu */
+  --font-bn: var(--nf-bn), serif;
+  --font-gu: var(--nf-gu), serif;
+  --font-pa: var(--nf-pa), serif;
+  --font-or: var(--nf-or), serif;
+  --font-ta: var(--nf-ta), serif;
+  --font-te: var(--nf-te), serif;
+  --font-kn: var(--nf-kn), serif;
+  --font-ml: var(--nf-ml), serif;
+  --font-arabic: var(--nf-arabic), serif;
+  --font-urdu: var(--nf-urdu), var(--nf-arabic), serif;
 }
 
 @theme {
@@ -35,6 +61,8 @@
   --color-inv-card: #ffffff;
   --color-inv-heading: #3d0710;
   --color-inv-chip: rgba(0, 0, 0, 0.18);
+  --color-inv-alt: #c9a24b;
+  --color-inv-deep: #2b1d14;
 
   --animate-fade-up: fade-up 0.7s ease-out both;
   @keyframes fade-up {
@@ -181,3 +209,64 @@
   .prose-page p { @apply mb-4 leading-relaxed text-ink/90; }
   .prose-page ul { @apply mb-4 list-disc space-y-1 pl-6 text-ink/90; }
 }
+
+/* ── Styled invitation looks (src/components/invite/styles) ──────────────
+   Decorations that need pseudo-elements, animations or complex backgrounds. */
+@layer components {
+  /* Rajwada: parchment scroll with wooden rods */
+  .rj-scroll {
+    @apply relative mx-2.5;
+    background: linear-gradient(90deg, #f8ecd0, #fff6e2 50%, #f3e2bd);
+    border-block: 2px solid var(--color-inv-alt);
+  }
+  .rj-scroll::before, .rj-scroll::after {
+    content: '';
+    @apply absolute -top-2 -bottom-2 w-3.5 rounded-full;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--color-inv-alt) 60%, #000), color-mix(in srgb, var(--color-inv-alt) 70%, #fff) 45%, color-mix(in srgb, var(--color-inv-alt) 55%, #000));
+  }
+  .rj-scroll::before { left: -10px; }
+  .rj-scroll::after { right: -10px; }
+
+  /* Filmy: sun-rays, marquee bulbs, outlined title, film-strip holes */
+  .fm-rays { background: repeating-conic-gradient(from 0deg at 50% 42%, var(--color-inv-hero-from) 0 9deg, var(--color-inv-hero-via) 9deg 18deg); }
+  .fm-bulbs {
+    --bulb: radial-gradient(circle, #ffe58a 0 4px, rgba(255, 220, 110, 0.35) 5px, transparent 7px);
+    background: var(--bulb) 0 2px / 26px 22px repeat-x, var(--bulb) 0 100% / 26px 22px repeat-x,
+      var(--bulb) 2px 0 / 22px 26px repeat-y, var(--bulb) 100% 0 / 22px 26px repeat-y;
+  }
+  .fm-title { color: #fff; -webkit-text-stroke: 3px var(--color-inv-alt); paint-order: stroke fill; text-shadow: 5px 5px 0 var(--color-inv-deep); }
+  .fm-strip::before, .fm-strip::after {
+    content: '';
+    @apply absolute top-2.5 bottom-2.5 w-3 rounded-sm;
+    background: repeating-linear-gradient(#1d1a18 0 8px, #f4efe9 8px 18px, #1d1a18 18px 24px);
+  }
+  .fm-strip::before { left: 9px; }
+  .fm-strip::after { right: 9px; }
+
+  /* Lifafa: the envelope opens (checkbox + label, no JavaScript needed) */
+  .lf-card { opacity: 0; transform: translateY(48px) scale(0.97); }
+  .lf-cover { transition: opacity 0.6s ease 0.9s, visibility 0s linear 1.5s; }
+  .lf-flap { transition: transform 0.7s cubic-bezier(0.3, 0.7, 0.3, 1) 0.25s; transform-style: preserve-3d; }
+  .lf-seal { transition: transform 0.35s ease, opacity 0.35s ease; }
+  .lf-env { perspective: 900px; }
+  .lf-toggle:checked ~ .lf-cover { opacity: 0; visibility: hidden; }
+  .lf-toggle:checked ~ .lf-cover .lf-flap { transform: rotateX(180deg); }
+  .lf-toggle:checked ~ .lf-cover .lf-seal { transform: translate(-50%, -50%) scale(1.5) rotate(-12deg); opacity: 0; }
+  .lf-toggle:checked ~ .lf-card { opacity: 1; transform: none; transition: opacity 0.8s ease 1s, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 1s; }
+  .lf-toggle:focus-visible ~ .lf-cover .lf-env { outline: 3px solid var(--color-gold); outline-offset: 6px; }
+  /* When sealed again, the card hides at once and the envelope comes straight back */
+  .lf-toggle:not(:checked) ~ .lf-cover { transition-delay: 0s; }
+  /* Previews open by themselves after a moment */
+  .lf-auto .lf-toggle:not(:checked) ~ .lf-cover { animation: lf-cover-out 0.6s ease 2.6s forwards; }
+  .lf-auto .lf-toggle:not(:checked) ~ .lf-cover .lf-seal { animation: lf-seal-break 0.4s ease 1.4s forwards; }
+  .lf-auto .lf-toggle:not(:checked) ~ .lf-cover .lf-flap { animation: lf-flap-open 0.8s ease 1.7s forwards; }
+  .lf-auto .lf-toggle:not(:checked) ~ .lf-card { animation: lf-card-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 2.7s forwards; }
+  @media (prefers-reduced-motion: reduce) {
+    .lf-auto .lf-cover { display: none; }
+    .lf-auto .lf-card { opacity: 1; transform: none; }
+  }
+}
+@keyframes lf-cover-out { to { opacity: 0; visibility: hidden; } }
+@keyframes lf-seal-break { to { transform: translate(-50%, -50%) scale(1.5) rotate(-12deg); opacity: 0; } }
+@keyframes lf-flap-open { to { transform: rotateX(180deg); } }
+@keyframes lf-card-in { to { opacity: 1; transform: none; } }

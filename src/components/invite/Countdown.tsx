@@ -20,17 +20,27 @@ const getServerNow = () => null; // server HTML and hydration show "–" placeho
 
 // Boxes share the available width (never wider than the hero's border);
 // `compact` keeps phone sizes inside the editor's phone-frame preview.
-export function Countdown({ date, time, compact = false }: { date: string; time: string; compact?: boolean }) {
+// `variant="text"` is a single quiet line ("41 days to go") for minimal looks;
+// `className` replaces the default spacing/width of the boxes.
+export function Countdown({ date, time, compact = false, variant = 'boxes', className }: { date: string; time: string; compact?: boolean; variant?: 'boxes' | 'text'; className?: string }) {
   const now = useSyncExternalStore(subscribe, getNow, getServerNow);
   const target = weddingTimestamp(date, time);
   const left = now === null ? 0 : Math.max(0, target - now);
 
   if (now !== null && left === 0) {
-    return <p className="mt-8 font-display text-2xl italic text-inv-accent">Just married ♥</p>;
+    return <p className={variant === 'text' ? className : 'mt-8 font-display text-2xl italic text-inv-accent'}>Just married ♥</p>;
+  }
+  if (variant === 'text') {
+    const days = Math.ceil(left / 86_400_000);
+    return (
+      <p className={className} role="timer" aria-label="Time until the wedding">
+        {now === null ? '\u00a0' : days <= 1 ? 'Tomorrow!' : `${days} days to go`}
+      </p>
+    );
   }
 
   return (
-    <div className={`mt-6 grid w-full grid-cols-4 gap-2 ${compact ? 'max-w-[280px]' : 'max-w-[280px] sm:mt-8 sm:max-w-[356px] sm:gap-3'}`} role="timer" aria-label="Time until the wedding">
+    <div className={`grid w-full grid-cols-4 gap-2 ${className ?? (compact ? 'mt-6 max-w-[280px]' : 'mt-6 max-w-[280px] sm:mt-8 sm:max-w-[356px] sm:gap-3')}`} role="timer" aria-label="Time until the wedding">
       {UNITS.map(([label, ms], i) => {
         const bigger = i === 0 ? Infinity : UNITS[i - 1][1];
         const value = Math.floor((left % bigger) / ms);
