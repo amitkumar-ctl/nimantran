@@ -4,6 +4,8 @@ import { cookies } from 'next/headers';
 import { connectDB } from '@/lib/db';
 import { Invite } from '@/lib/models/Invite';
 import { Rsvp } from '@/lib/models/Rsvp';
+import { Shagun } from '@/lib/models/Shagun';
+import { hashKey, readKey, shagunCookie } from '@/lib/guest-keys';
 import { getSession } from '@/lib/auth/session';
 import { error, json, parseBody } from '@/lib/api-helpers';
 import { rsvpSchema, type RsvpInput } from '@/lib/validation';
@@ -57,8 +59,16 @@ export async function GET(_req: Request, ctx: Ctx) {
 
   const owner = await isOwner(invite.owner);
   const mine = owner ? null : await findMyRsvp(slug, invite._id);
+  // This browser's own "I've sent shagun" report, so the form can show/edit it.
+  const sKey = owner ? null : await readKey(shagunCookie(slug));
+  const myShagun = sKey ? await Shagun.findOne({ invite: invite._id, source: 'guest', editTokenHash: hashKey(sKey) }).lean() : null;
   return json(
-    { isOwner: owner, inviteId: owner ? String(invite._id) : undefined, rsvp: mine ? { ...toInput(mine), updatedAt: (mine.updatedAt as Date).toISOString() } : null },
+    {
+      isOwner: owner,
+      inviteId: owner ? String(invite._id) : undefined,
+      rsvp: mine ? { ...toInput(mine), updatedAt: (mine.updatedAt as Date).toISOString() } : null,
+      shagun: myShagun ? { name: myShagun.name, amount: myShagun.amount, message: myShagun.note ?? '', confirmed: !!myShagun.confirmed } : null,
+    },
     { headers: { 'Cache-Control': 'private, no-store' } },
   );
 }

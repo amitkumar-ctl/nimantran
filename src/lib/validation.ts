@@ -53,6 +53,31 @@ export const rsvpSchema = z.object({
 });
 export type RsvpInput = z.infer<typeof rsvpSchema>;
 
+// ── Shagun ──
+const rupees = z.coerce.number({ error: 'Enter the amount in ₹' }).int('Whole rupees only').min(1, 'Enter the amount in ₹').max(10_00_000, 'That seems too large');
+export const SHAGUN_METHODS = ['upi', 'cash', 'gift', 'other'] as const;
+export type ShagunMethod = (typeof SHAGUN_METHODS)[number];
+
+/** A guest telling the couple "I've sent shagun" (from the invite page). */
+export const shagunReportSchema = z.object({
+  name: trimmed(80).min(2, 'Please enter your name'),
+  amount: rupees,
+  message: trimmed(200).default(''),
+  website: z.string().max(500).optional().default(''), // honeypot
+});
+export type ShagunReport = z.infer<typeof shagunReportSchema>;
+
+/** The couple recording or correcting an entry in their shagun register. */
+export const shagunEntrySchema = z.object({
+  name: trimmed(80).min(1, 'Enter a name'),
+  amount: rupees,
+  method: z.enum(SHAGUN_METHODS).default('upi'),
+  note: trimmed(200).default(''),
+  rsvpId: z.string().max(40).nullable().optional(),
+  confirmed: z.boolean().optional(),
+});
+export const shagunUpdateSchema = shagunEntrySchema.partial();
+
 export const signupSchema = z.object({
   name: trimmed(60).min(2, 'Enter your name'),
   email: z.email('Enter a valid email').trim().toLowerCase(),

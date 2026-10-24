@@ -26,3 +26,15 @@ export type RsvpData = {
 };
 
 export type SessionUser = { id: string; name: string; email: string; avatarUrl?: string };
+
+export type ShagunData = {
+  id: string;
+  name: string;
+  amount: number;
+  method: 'upi' | 'cash' | 'gift' | 'other';
+  note: string;
+  source: 'guest' | 'host';
+  confirmed: boolean;
+  rsvpId: string | null;
+  createdAt: string;
+};

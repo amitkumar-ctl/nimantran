@@ -8,12 +8,14 @@ import { PageLink } from '@/components/ui/PageLink';
 
 type Props = { slug: string; events: string[]; preview?: boolean };
 type SavedRsvp = Omit<RsvpInput, 'website'> & { updatedAt: string };
-type MyRsvp = { isOwner: boolean; inviteId?: string; rsvp: SavedRsvp | null };
+type MyShagun = { name: string; amount: number; message: string; confirmed: boolean };
+export type MyRsvp = { isOwner: boolean; inviteId?: string; rsvp: SavedRsvp | null; shagun?: MyShagun | null };
 
 const endpoint = (slug: string) => `/api/public/invites/${slug}/rsvp`;
-const myRsvpKey = (slug: string) => ['my-rsvp', slug] as const;
+/** Shared with the shagun box: one request tells both who this visitor is. */
+export const myRsvpKey = (slug: string) => ['my-rsvp', slug] as const;
 
-async function fetchMyRsvp(slug: string): Promise<MyRsvp> {
+export async function fetchMyRsvp(slug: string): Promise<MyRsvp> {
   const res = await fetch(endpoint(slug), { cache: 'no-store' });
   if (!res.ok) return { isOwner: false, rsvp: null }; // fall back to a fresh form
   return res.json();
@@ -78,7 +80,7 @@ function LiveRsvp({ slug, events }: { slug: string; events: string[] }) {
       isUpdate={!!saved}
       onCancel={saved ? () => setEditing(false) : undefined}
       onSaved={(sent, updated) => {
-        qc.setQueryData<MyRsvp>(myRsvpKey(slug), { isOwner: false, rsvp: { ...sent, updatedAt: new Date().toISOString() } });
+        qc.setQueryData<MyRsvp>(myRsvpKey(slug), (old) => ({ ...old, isOwner: false, rsvp: { ...sent, updatedAt: new Date().toISOString() } }));
         setJustSaved(updated ? 'updated' : 'new');
         setEditing(false);
       }}

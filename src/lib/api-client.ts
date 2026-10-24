@@ -1,4 +1,4 @@
-import type { InviteData, InviteSummary, RsvpData, SessionUser } from './types';
+import type { InviteData, InviteSummary, RsvpData, SessionUser, ShagunData } from './types';
 import type { InviteContent, Theme } from './validation';
 
 // Typed browser-side API calls + TanStack Query keys, in one place.
@@ -26,11 +26,14 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
+export type ShagunInput = { name: string; amount: number; method: ShagunData['method']; note: string; rsvpId?: string | null; confirmed?: boolean };
+
 export const queryKeys = {
   me: ['me'] as const,
   invites: ['invites'] as const,
   invite: (id: string) => ['invites', id] as const,
   rsvps: (id: string) => ['invites', id, 'rsvps'] as const,
+  shagun: (id: string) => ['invites', id, 'shagun'] as const,
 };
 
 export const api = {
@@ -51,6 +54,12 @@ export const api = {
     request<{ invite: InviteData }>(`/api/invites/${id}`, { method: 'PATCH', body: JSON.stringify(data) }).then((r) => r.invite),
   deleteInvite: (id: string) => request<{ ok: true }>(`/api/invites/${id}`, { method: 'DELETE' }),
   listRsvps: (id: string) => request<{ rsvps: RsvpData[] }>(`/api/invites/${id}/rsvps`).then((r) => r.rsvps),
+  listShagun: (id: string) => request<{ entries: ShagunData[] }>(`/api/invites/${id}/shagun`).then((r) => r.entries),
+  addShagun: (id: string, data: ShagunInput) =>
+    request<{ entry: ShagunData }>(`/api/invites/${id}/shagun`, { method: 'POST', body: JSON.stringify(data) }).then((r) => r.entry),
+  updateShagun: (id: string, entryId: string, data: Partial<ShagunInput> & { confirmed?: boolean }) =>
+    request<{ entry: ShagunData }>(`/api/invites/${id}/shagun/${entryId}`, { method: 'PATCH', body: JSON.stringify(data) }).then((r) => r.entry),
+  deleteShagun: (id: string, entryId: string) => request<{ ok: true }>(`/api/invites/${id}/shagun/${entryId}`, { method: 'DELETE' }),
 };
 
 /** Only allow same-site paths after login ("/dashboard"), never "//evil.com". */
