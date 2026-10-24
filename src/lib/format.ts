@@ -78,7 +78,14 @@ export function weddingTimestamp(ymd: string, hhmm = '18:00') {
 
 export const mapsSearchUrl = (q: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 
-export function upiLink(upiId: string, payee: string, note: string) {
-  const p = new URLSearchParams({ pa: upiId, pn: payee, cu: 'INR', tn: note });
-  return `upi://pay?${p.toString()}`;
+/**
+ * Standard UPI payment URI (also the content of UPI QR codes). The UPI ID is
+ * kept as-is ("@" not escaped) and spaces become %20, not "+", which some
+ * UPI apps would show literally.
+ */
+export function upiLink(upiId: string, payee: string, note?: string) {
+  const enc = (s: string) => encodeURIComponent(s.trim());
+  const parts = [`pa=${upiId.trim()}`, `pn=${enc(payee)}`, 'cu=INR'];
+  if (note) parts.push(`tn=${enc(note)}`);
+  return `upi://pay?${parts.join('&')}`;
 }

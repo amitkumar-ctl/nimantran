@@ -284,6 +284,11 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
           <Field id="upiId" label="UPI ID for shagun (optional)" error={errors.upiId}><input {...text('upiId')} placeholder="name@okhdfcbank" autoCapitalize="none" /></Field>
           <Field id="upiName" label="Name shown in UPI app"><input {...text('upiName')} placeholder="Aarav Sharma" /></Field>
         </div>
+        <p className="mt-3 rounded-xl bg-cream px-3 py-2.5 text-xs leading-relaxed text-muted">
+          <b className="text-ink">Tips:</b> write the name exactly as your bank shows it, so guests can see they’re paying the right person.
+          Guests can always pay by copying your UPI ID or scanning its QR code. One-tap “Open UPI app” links are often blocked for personal
+          UPI IDs, but work with a free business UPI ID (Google Pay for Business, PhonePe Business, Paytm for Business).
+        </p>
       </Section>
 
       <section data-tour="ed-delete" className="rounded-2xl border border-red-100 bg-white/60 p-5 sm:p-6">
