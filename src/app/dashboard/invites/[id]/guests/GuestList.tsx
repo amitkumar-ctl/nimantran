@@ -2,10 +2,12 @@
 
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Download, IndianRupee, Plus, RefreshCw, Search, Users } from 'lucide-react';
+import { ArrowLeft, Compass, Download, Plus, RefreshCw, Search } from 'lucide-react';
 import { api, queryKeys } from '@/lib/api-client';
 import { PageLink } from '@/components/ui/PageLink';
 import { inr, ShagunRegister, type Prefill } from './ShagunRegister';
+import { GuidedTour, TourButton } from '@/components/tour/GuidedTour';
+import { GUESTS_TOUR } from '@/components/tour/tours';
 
 type Filter = 'all' | 'yes' | 'no';
 
@@ -68,51 +70,42 @@ export function GuestList({ id }: { id: string }) {
           <h1 className="font-display text-4xl font-semibold text-maroon-900">Guest list</h1>
           {invite.data && <p className="text-muted">{invite.data.partner1} &amp; {invite.data.partner2}</p>}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <TourButton id="guests"><Compass className="h-4 w-4" /> Tour</TourButton>
           <button type="button" className="btn btn-outline btn-sm" onClick={() => { rsvps.refetch(); shagun.refetch(); }} disabled={rsvps.isFetching}>
             <RefreshCw className={`h-4 w-4 ${rsvps.isFetching ? 'animate-spin' : ''}`} /> Refresh
           </button>
-          <a href={`/api/invites/${id}/rsvps?format=csv`} className="btn btn-primary btn-sm"><Download className="h-4 w-4" /> Guest list (CSV)</a>
+          <a href={`/api/invites/${id}/rsvps?format=csv`} data-tour="gl-download" className="btn btn-primary btn-sm"><Download className="h-4 w-4" /> Guest list (CSV)</a>
         </div>
       </div>
 
-      {/* Headline numbers: who's coming, and the shagun collected */}
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="card flex items-center gap-4 bg-gradient-to-br from-white to-cream-2/60 p-5">
-          <span className="grid h-12 w-12 flex-none place-items-center rounded-2xl bg-maroon text-white"><Users className="h-6 w-6" /></span>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">People coming</p>
-            <p className="font-display text-5xl leading-none font-semibold text-maroon-900">{rsvps.isPending ? '–' : stats.headcount}</p>
-            <p className="mt-1 text-sm text-muted">from {stats.attending} {stats.attending === 1 ? 'RSVP' : 'RSVPs'} · {stats.declined} can’t come</p>
-          </div>
+      {/* Counters: replies, who's coming (and how many people), shagun collected */}
+      <div data-tour="gl-counts" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="card p-3 sm:p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted sm:text-xs">Responses</p>
+          <p className="font-display text-3xl font-semibold text-maroon-900">{rsvps.isPending ? '–' : stats.responses}</p>
         </div>
-        <a href="#shagun" className="card flex items-center gap-4 bg-gradient-to-br from-white to-amber-50 p-5 transition hover:border-gold">
-          <span className="grid h-12 w-12 flex-none place-items-center rounded-2xl bg-gold text-white"><IndianRupee className="h-6 w-6" /></span>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Shagun received</p>
-            <p className="font-display text-5xl leading-none font-semibold text-maroon-900">{shagun.isPending ? '–' : inr(stats.received)}</p>
-            <p className="mt-1 text-sm text-muted">
-              {stats.receivedCount} {stats.receivedCount === 1 ? 'entry' : 'entries'}
-              {stats.toCheckCount > 0 && <> · <span className="font-semibold text-amber-800">{inr(stats.toCheck)} reported, to check</span></>}
-            </p>
-          </div>
+        <div className="card p-3 sm:p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted sm:text-xs">Attending</p>
+          <p className="font-display text-3xl font-semibold text-maroon-900">
+            {rsvps.isPending ? '–' : stats.attending}
+            {/* RSVPs can be for a whole family: the head-count caterers need. */}
+            {!rsvps.isPending && <span className="ml-1.5 font-sans text-sm font-semibold text-muted">· {stats.headcount} {stats.headcount === 1 ? 'person' : 'people'}</span>}
+          </p>
+        </div>
+        <div className="card p-3 sm:p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted sm:text-xs">Can’t come</p>
+          <p className="font-display text-3xl font-semibold text-maroon-900">{rsvps.isPending ? '–' : stats.declined}</p>
+        </div>
+        <a href="#shagun" data-tour="gl-shagun-total" className="card p-3 transition hover:border-gold sm:p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted sm:text-xs">Shagun received</p>
+          <p className="font-display text-3xl font-semibold text-maroon-900">{shagun.isPending ? '–' : inr(stats.received)}</p>
+          {stats.toCheckCount > 0 && <p className="text-xs font-semibold text-amber-800">+ {inr(stats.toCheck)} to check</p>}
         </a>
-      </div>
-      <div className="mt-3 grid grid-cols-3 gap-3">
-        {[
-          ['Responses', stats.responses],
-          ['Attending', stats.attending],
-          ['Can’t come', stats.declined],
-        ].map(([label, value]) => (
-          <div key={label} className="card p-3 sm:p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted sm:text-xs">{label}</p>
-            <p className="font-display text-3xl font-semibold text-maroon-900">{rsvps.isPending ? '–' : value}</p>
-          </div>
-        ))}
       </div>
 
       {stats.perEvent.size > 0 && (
-        <div className="card mt-3 p-4">
+        <div data-tour="gl-per-function" className="card mt-3 p-4">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Headcount per function (for caterers)</p>
           <div className="flex flex-wrap gap-2">
             {[...stats.perEvent].map(([name, n]) => <span key={name} className="chip bg-cream-2">{name}: <b>{n}</b></span>)}
@@ -144,7 +137,7 @@ export function GuestList({ id }: { id: string }) {
       {shown.length > 0 && (
         <>
           {/* Cards on mobile */}
-          <ul className="mt-4 space-y-3 md:hidden">
+          <ul data-tour="gl-guests" className="mt-4 space-y-3 md:hidden">
             {shown.map((r) => (
               <li key={r.id} className="card p-4">
                 <div className="flex items-start justify-between gap-2">
@@ -164,7 +157,7 @@ export function GuestList({ id }: { id: string }) {
             ))}
           </ul>
           {/* Table on desktop */}
-          <div className="card mt-4 hidden overflow-x-auto md:block">
+          <div data-tour="gl-guests" className="card mt-4 hidden overflow-x-auto md:block">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-line text-xs uppercase tracking-wide text-muted">
                 <tr>{['Name', 'Phone', 'Attending', 'Guests', 'Functions', 'Dietary', 'Message', 'Shagun'].map((h) => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr>
@@ -189,6 +182,9 @@ export function GuestList({ id }: { id: string }) {
       )}
 
       <ShagunRegister inviteId={id} entries={shagun.data ?? []} rsvps={rsvps.data ?? []} prefill={prefill} onPrefillUsed={() => setPrefill(null)} />
+
+      {/* First visit: a short tour of the guest list and shagun register. */}
+      {!rsvps.isPending && !shagun.isPending && <GuidedTour id="guests" steps={GUESTS_TOUR} />}
     </div>
   );
 }

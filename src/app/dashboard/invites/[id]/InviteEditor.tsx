@@ -158,9 +158,12 @@ function EditorTopBar({ draft, dirty, saving, onSave, saveError }: {
             {saving && <Loader2 className="h-4 w-4 animate-spin" />} Save
           </button>
           {!draft.published ? (
-            <button type="button" data-tour="ed-publish" className="btn btn-primary btn-sm" disabled={saving} onClick={() => onSave({ published: true })}>
-              <Rocket className="h-4 w-4" /> Publish
-            </button>
+            // Wrapper: the tour's "QR code" step points here until the invite is published.
+            <span data-tour="ed-qr-soon" className="inline-flex">
+              <button type="button" data-tour="ed-publish" className="btn btn-primary btn-sm" disabled={saving} onClick={() => onSave({ published: true })}>
+                <Rocket className="h-4 w-4" /> Publish
+              </button>
+            </span>
           ) : (
             <button type="button" data-tour="ed-publish" className="btn btn-ghost btn-sm" disabled={saving} onClick={() => onSave({ published: false })}>Unpublish</button>
           )}

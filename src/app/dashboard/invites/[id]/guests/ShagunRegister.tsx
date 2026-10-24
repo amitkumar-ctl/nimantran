@@ -32,7 +32,7 @@ export function ShagunRegister({ inviteId, entries, rsvps, prefill, onPrefillUse
   const toCheck = entries.filter((e) => !e.confirmed);
 
   return (
-    <section id="shagun" className="mt-10 scroll-mt-24" aria-labelledby="shagun-title">
+    <section id="shagun" data-tour="gl-register" className="mt-10 scroll-mt-24" aria-labelledby="shagun-title">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 id="shagun-title" className="font-display text-3xl font-semibold text-maroon-900">Shagun register</h2>
@@ -40,7 +40,7 @@ export function ShagunRegister({ inviteId, entries, rsvps, prefill, onPrefillUse
         </div>
         <div className="flex flex-wrap gap-2">
           <a href={`/api/invites/${inviteId}/shagun?format=csv`} className="btn btn-outline btn-sm"><Download className="h-4 w-4" /> Download (CSV)</a>
-          {!showForm && <button type="button" className="btn btn-primary btn-sm" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> Record shagun</button>}
+          {!showForm && <button type="button" data-tour="gl-record" className="btn btn-primary btn-sm" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> Record shagun</button>}
         </div>
       </div>
 
@@ -56,7 +56,7 @@ export function ShagunRegister({ inviteId, entries, rsvps, prefill, onPrefillUse
       )}
 
       {toCheck.length > 0 && (
-        <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
+        <p data-tour="gl-to-check" className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
           {toCheck.length} shagun {toCheck.length === 1 ? 'report' : 'reports'} from guests to check ({inr(toCheck.reduce((n, e) => n + e.amount, 0))}). Look in your bank or UPI app and tap <b>Received</b>.
         </p>
       )}

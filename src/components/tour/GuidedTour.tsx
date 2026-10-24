@@ -24,7 +24,7 @@ export type TourStep = {
 };
 
 // Bump the version when tours gain steps, so returning users see them once.
-const TOUR_VERSION = 2;
+const TOUR_VERSION = 3;
 const doneKey = (id: string) => `nm_tour_${id}_v${TOUR_VERSION}`;
 const REPLAY_EVENT = 'nm:tour';
 
