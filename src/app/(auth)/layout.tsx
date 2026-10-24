@@ -5,7 +5,6 @@ export default function AuthLayout({ children }: LayoutProps<'/'>) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
       <aside className="relative hidden overflow-hidden bg-maroon-900 p-12 text-cream lg:flex lg:flex-col lg:justify-between">
-        <Logo light />
         <div>
           <BrandMark className="mb-6 h-24 w-24" />
           <p className="font-script text-6xl text-gold-200">Your story,</p>
