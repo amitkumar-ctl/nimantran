@@ -7,6 +7,7 @@ export default function AuthLayout({ children }: LayoutProps<'/'>) {
       <aside className="relative hidden overflow-hidden bg-maroon-900 p-12 text-cream lg:flex lg:flex-col lg:justify-between">
         <Logo light />        
         <div>
+          <BrandMark className="mb-6 h-24 w-24" />
           <p className="font-script text-6xl text-gold-200">Your story,</p>
           <p className="font-display text-3xl">one beautiful link.</p>
           <p className="mt-4 max-w-sm text-cream/75">Every function, venue, RSVP and shagun, shared in a single WhatsApp message.</p>
