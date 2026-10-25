@@ -50,7 +50,7 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
             <div className="mx-auto max-w-md">
               <H2 className={`text-center ${view.rsvp.titleClass}`}>{view.rsvp.title}</H2>
               <NativeLine design={design} kind="welcome" className="mt-1 text-center text-lg text-inv-primary" />
-              {invite.rsvpDeadline && <p className={`mt-1 mb-6 text-center ${view.rsvp.subClass}`}>Kindly RSVP by {formatLongDate(invite.rsvpDeadline)}</p>}
+              {invite.rsvpDeadline && <p className={`mt-1 mb-6 text-center ${view.rsvp.subClass}`}>Please reply by {formatLongDate(invite.rsvpDeadline)}</p>}
               {!invite.rsvpDeadline && <div className="mb-6" />}
               {rsvpSlot}
               {shagunSlot}
@@ -163,7 +163,7 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
           <div className="mx-auto max-w-md">
             <H2 className="text-center font-display text-4xl font-semibold text-inv-heading">Will you join us?</H2>
             {invite.rsvpDeadline && (
-              <p className="mt-1 mb-6 text-center font-display text-lg italic text-muted">Kindly RSVP by {formatLongDate(invite.rsvpDeadline)}</p>
+              <p className="mt-1 mb-6 text-center font-display text-lg italic text-muted">Please reply by {formatLongDate(invite.rsvpDeadline)}</p>
             )}
             {rsvpSlot}
             {shagunSlot}

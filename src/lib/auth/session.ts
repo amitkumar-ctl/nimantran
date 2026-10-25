@@ -1,9 +1,9 @@
 import 'server-only';
 import { cookies } from 'next/headers';
-import { LOGGED_IN_COOKIE, SESSION_COOKIE, SESSION_MAX_AGE, signSessionToken, verifySessionToken } from './token';
+import { LOGGED_IN_COOKIE, readSessionToken, SESSION_COOKIE, SESSION_MAX_AGE, signSessionToken } from './token';
 
 export { SESSION_COOKIE };
-export type Session = { userId: string };
+export type Session = { userId: string; /** issued at (seconds) */ iat: number };
 
 export async function createSession(userId: string) {
   const token = await signSessionToken(userId);
@@ -19,8 +19,7 @@ export async function createSession(userId: string) {
 }
 
 export async function getSession(): Promise<Session | null> {
-  const userId = await verifySessionToken((await cookies()).get(SESSION_COOKIE)?.value);
-  return userId ? { userId } : null;
+  return readSessionToken((await cookies()).get(SESSION_COOKIE)?.value);
 }
 
 export async function destroySession() {

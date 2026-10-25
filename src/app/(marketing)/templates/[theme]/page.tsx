@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const info = getTemplate(theme);
   return {
     title: `${info.name} Wedding Invitation Template`,
-    description: `${info.description} Free digital wedding invite with RSVP, maps and countdown.`,
+    description: `${info.description} Free digital wedding invite where guests reply online, with maps and countdown.`,
     alternates: { canonical: `/templates/${theme}` },
     // Generated variants are near-duplicates: let Google follow them, but index the featured pages + collections.
     ...(info.featured ? {} : { robots: { index: false, follow: true } }),
@@ -95,7 +95,7 @@ export default async function TemplatePage({ params }: Props) {
           </div>
           <h2 className="mt-8 font-display text-2xl font-semibold text-maroon-900">Included with this design</h2>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-            {[info.layout === 'lifafa' ? 'Envelope addressed to each family' : 'Your names & blessing line', 'All functions with venues', 'Google Maps link per venue', 'Live countdown to muhurat', 'RSVP with headcount per function', 'UPI shagun button', 'WhatsApp preview card', 'Edit anytime, same link'].map((f) => (
+            {[info.layout === 'lifafa' ? 'Envelope addressed to each family' : 'Your names & blessing line', 'All functions with venues', 'Google Maps link per venue', 'Live countdown to muhurat', 'Guest replies with headcount per function', 'UPI shagun button', 'WhatsApp preview card', 'Edit anytime, same link'].map((f) => (
               <li key={f} className="flex items-center gap-2 text-ink/85"><Check className="h-4 w-4 flex-none text-green-700" /> {f}</li>
             ))}
           </ul>

@@ -69,7 +69,7 @@ function Hero({ invite, design, framed, H1 }: StyleProps) {
         <p className="relative mt-1 font-marcellus text-sm opacity-80">{formatLongDate(invite.weddingDate).split(',')[0]}{place && <><br />{place}</>}</p>
         <Countdown date={invite.weddingDate} time={invite.weddingTime} variant="text" className="relative mt-2 font-marcellus text-xs tracking-wider opacity-60" />
         <div className="relative mt-6 flex flex-wrap justify-center gap-2 font-marcellus text-[13px]">
-          <a href="#rsvp" className="rounded-full bg-inv-accent px-4 py-2.5 text-white">RSVP</a>
+          <a href="#rsvp" className="rounded-full bg-inv-accent px-4 py-2.5 text-white">Reply</a>
           <a href="#celebrations" className="rounded-full border border-inv-accent px-4 py-2.5 text-inv-accent">Functions</a>
           {place && <a href={mapsSearchUrl([place, invite.city].filter(Boolean).join(', '))} target="_blank" rel="noopener noreferrer" className="rounded-full border border-inv-accent px-4 py-2.5 text-inv-accent">Map</a>}
         </div>

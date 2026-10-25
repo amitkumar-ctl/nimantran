@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!c) return {};
   const n = searchTemplates(c.query ?? '', c.filters).length;
   return {
-    title: `${c.title} (${n}+ designs with RSVP)`,
-    description: `${c.intro} ${n} digital invitation designs with RSVP, venue maps, countdown and UPI shagun. Free to start.`,
+    title: `${c.title} (${n}+ designs with guest replies)`,
+    description: `${c.intro} ${n} digital invitation designs with guest replies (RSVP), venue maps, countdown and UPI shagun. Free to start.`,
     alternates: { canonical: `/templates/c/${c.slug}` },
   };
 }
@@ -58,7 +58,7 @@ export default async function CollectionPage({ params }: Props) {
       </nav>
       <h1 className="font-display text-4xl font-semibold text-maroon-900 sm:text-5xl">{c.h1}</h1>
       <p className="mt-3 max-w-2xl text-lg text-ink/80">{c.intro}</p>
-      <p className="mt-2 text-sm text-muted">{results.length.toLocaleString('en-IN')} designs · every one includes RSVP, maps, countdown and UPI shagun.</p>
+      <p className="mt-2 text-sm text-muted">{results.length.toLocaleString('en-IN')} designs · every one includes guest replies, maps, countdown and UPI shagun.</p>
 
       <ul className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
         {results.slice(0, SHOWN).map((t) => <li key={t.id}><BrowseCard t={t} /></li>)}

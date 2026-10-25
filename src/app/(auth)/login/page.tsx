@@ -4,7 +4,7 @@ import { AuthForm } from '@/components/ui/AuthForm';
 
 export const metadata: Metadata = {
   title: 'Log in',
-  description: 'Log in to edit your wedding invitation and see RSVPs.',
+  description: 'Log in to edit your wedding invitation and see who’s coming.',
   alternates: { canonical: '/login' },
 };
 

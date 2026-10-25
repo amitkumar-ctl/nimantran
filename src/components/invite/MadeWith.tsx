@@ -14,12 +14,12 @@ export function MadeWith() {
         <Diya className="h-6 w-6" /> Made with love on <b className="font-semibold">{site.name}</b>
       </Link>
       <p className="mx-auto mt-2 max-w-sm text-sm text-cream/75">
-        Planning a wedding or a family function? Create an invitation in about 5 minutes.
+        Planning a wedding or a family function? Create an invitation website like this one, free, in about 5 minutes.
       </p>
       <Link href={`/signup?${UTM}`} className="btn btn-shine mt-5 bg-gold-200 text-maroon-900 hover:bg-gold">
         Create your own invite
       </Link>
-      <p className="mt-4 text-xs text-cream/50">RSVP · Venue maps · Countdown · UPI shagun · {templateCount().toLocaleString('en-IN')}+ designs</p>
+      <p className="mt-4 text-xs text-cream/50">Guest replies · Venue maps · Countdown · UPI shagun · {templateCount().toLocaleString('en-IN')}+ designs</p>
     </footer>
   );
 }

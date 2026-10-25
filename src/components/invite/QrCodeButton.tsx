@@ -84,7 +84,7 @@ function QrDialog({ link, names, colour, slug, onClose }: Props & { onClose: () 
       g.fillText('Scan to open our wedding invitation', c.width / 2, 300);
       g.drawImage(qr, (c.width - 760) / 2, 360);
       g.font = `32px ${display}`;
-      g.fillText('Functions · Venue maps · RSVP', c.width / 2, 1200);
+      g.fillText('Functions · Venue maps · Reply online', c.width / 2, 1200);
       g.font = `28px ${display}`;
       g.fillText(link.replace(/^https?:\/\//, ''), c.width / 2, 1290, c.width - 200);
       save(c.toDataURL('image/png'), `${file}-qr-card.png`);
@@ -99,7 +99,7 @@ function QrDialog({ link, names, colour, slug, onClose }: Props & { onClose: () 
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
             <h2 id="qr-title" className="font-display text-2xl font-semibold text-maroon-900">QR code for printed cards</h2>
-            <p className="text-sm text-muted">Guests scan it to open your invite, see the venues and RSVP.</p>
+            <p className="text-sm text-muted">Guests scan it to open your invite, see the venues and reply.</p>
           </div>
           <button type="button" className="btn btn-ghost btn-sm -mr-2 px-2" onClick={onClose} aria-label="Close"><X className="h-4 w-4" /></button>
         </div>

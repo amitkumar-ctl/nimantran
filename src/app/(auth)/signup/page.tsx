@@ -5,7 +5,7 @@ import { AuthForm } from '@/components/ui/AuthForm';
 
 export const metadata: Metadata = {
   title: 'Create your free wedding invitation',
-  description: 'Sign up free and create a wedding invitation website with RSVP in minutes.',
+  description: 'Sign up free and create a wedding invitation website where guests reply online, in minutes.',
   alternates: { canonical: '/signup' },
 };
 

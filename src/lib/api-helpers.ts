@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server';
 import { isValidObjectId } from 'mongoose';
 import type { z } from 'zod';
 import { connectDB } from './db';
-import { getSession } from './auth/session';
+import { destroySession, getSession } from './auth/session';
+import { issuedBeforePasswordChange } from './auth/token';
+import { User } from './models/User';
 import { fieldErrors } from './validation';
 
 export const json = <T>(data: T, init?: number | ResponseInit) =>
@@ -32,6 +34,12 @@ export async function requireUser() {
   const session = await getSession();
   if (!session) return { response: error('Please log in', 401) } as const;
   await connectDB();
+  // After a password reset, sessions from before it (e.g. on a lost phone) stop working.
+  const user = await User.findById(session.userId, { passwordChangedAt: 1 }).lean();
+  if (!user || issuedBeforePasswordChange(session.iat, user.passwordChangedAt)) {
+    await destroySession();
+    return { response: error('Please log in', 401) } as const;
+  }
   return { userId: session.userId } as const;
 }
 

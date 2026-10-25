@@ -12,7 +12,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const { slug } = await params;
   const invite = await getPublicInvite(slug);
   if (!invite) {
-    return inviteCardImage({ kicker: site.name, title: 'Invitation', line1: 'Wedding invitations with RSVP' });
+    return inviteCardImage({ kicker: site.name, title: 'Invitation', line1: 'Wedding invitations guests can reply to' });
   }
   return inviteCardImage({
     theme: invite.theme,

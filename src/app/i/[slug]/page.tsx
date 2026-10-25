@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const couple = `${invite.partner1} & ${invite.partner2}`;
   const when = formatLongDate(invite.weddingDate);
-  const description = `You're invited to the wedding of ${couple} on ${when}${invite.city ? ` in ${invite.city}` : ''}. View all functions, venues and RSVP.`;
+  const description = `You're invited to the wedding of ${couple} on ${when}${invite.city ? ` in ${invite.city}` : ''}. View all functions and venues, and let them know if you’re coming.`;
   return {
     title: { absolute: `${couple} — Wedding Invitation` },
     description,
