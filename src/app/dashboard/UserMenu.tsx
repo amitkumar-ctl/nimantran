@@ -8,14 +8,16 @@ import { api, queryKeys } from '@/lib/api-client';
 export function UserMenu() {
   const router = useRouter();
   const qc = useQueryClient();
-  const { data: user } = useQuery({ queryKey: queryKeys.me, queryFn: api.me });
   const logout = useMutation({
     mutationFn: api.logout,
     onSuccess: () => {
-      qc.clear();
       router.replace('/login');
+      // Safe now: the "me" query below is disabled, so clearing the cache
+      // doesn't trigger a refetch (which would 401, the cookie being gone).
+      qc.clear();
     },
   });
+  const { data: user } = useQuery({ queryKey: queryKeys.me, queryFn: api.me, enabled: logout.isIdle });
 
   return (
     <div className="flex items-center gap-2">
