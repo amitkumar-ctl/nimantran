@@ -6,7 +6,7 @@ import { JsonLd } from '@/components/marketing/JsonLd';
 export const metadata: Metadata = {
   title: 'Wedding Invitation Wording in Hindi & English (Copy-Paste Samples)',
   description:
-    'Ready-to-use wedding invitation wording in Hindi and English: traditional, modern and WhatsApp messages, plus wording for haldi, mehndi, sangeet, reception and RSVP lines.',
+    'Ready-to-use wedding invitation wording in Hindi and English: traditional, modern and WhatsApp messages, plus wording for haldi, mehndi, sangeet, reception, and lines asking guests to reply (RSVP).',
   alternates: { canonical: '/wedding-invitation-wording' },
   openGraph: { type: 'article' },
 };
@@ -46,8 +46,8 @@ const SECTIONS: { id: string; title: string; intro: string; samples: Sample[] }[
     title: 'WhatsApp wedding invitation message',
     intro: 'Most invitations are now sent on WhatsApp. Keep the message short, put the link at the end, and let the invitation page hold all the details.',
     samples: [
-      { label: 'English', text: 'Namaste 🙏\nWith great joy, we invite you and your family to the wedding of Aarav & Meera on 12 December 2026 in Jaipur.\nAll functions, venues and RSVP are here:\n[your invite link]' },
-      { label: 'Hindi', lang: 'hi', text: 'नमस्ते 🙏\nआरव और मीरा के शुभ विवाह (12 दिसंबर 2026, जयपुर) में आप सपरिवार सादर आमंत्रित हैं।\nसभी कार्यक्रम, स्थान और RSVP इस लिंक पर देखें:\n[आपका इनवाइट लिंक]' },
+      { label: 'English', text: 'Namaste 🙏\nWith great joy, we invite you and your family to the wedding of Aarav & Meera on 12 December 2026 in Jaipur.\nSee all functions and venues, and let us know if you’re coming:\n[your invite link]' },
+      { label: 'Hindi', lang: 'hi', text: 'नमस्ते 🙏\nआरव और मीरा के शुभ विवाह (12 दिसंबर 2026, जयपुर) में आप सपरिवार सादर आमंत्रित हैं।\nसभी कार्यक्रम और स्थान इस लिंक पर देखें और बताएं कि आप आ रहे हैं:\n[आपका इनवाइट लिंक]' },
     ],
   },
   {
@@ -63,10 +63,11 @@ const SECTIONS: { id: string; title: string; intro: string; samples: Sample[] }[
   },
   {
     id: 'rsvp',
-    title: 'RSVP lines',
-    intro: 'Ask guests to respond by a clear date so you can confirm numbers with caterers and hotels.',
+    title: 'Asking guests to reply (RSVP lines)',
+    intro: 'Ask guests to tell you by a clear date whether they’re coming, so you can confirm numbers with caterers and hotels. (“RSVP” on a card means exactly this: “please reply”.)',
     samples: [
-      { label: 'Polite', text: 'Kindly RSVP by 25 November so we can make arrangements for you.' },
+      { label: 'Polite', text: 'Kindly let us know by 25 November if you’ll be joining us, so we can make arrangements for you.' },
+      { label: 'Classic (RSVP)', text: 'RSVP (please reply) by 25 November.' },
       { label: 'Hindi', lang: 'hi', text: 'कृपया 25 नवंबर तक अपनी उपस्थिति की पुष्टि करें।' },
     ],
   },
@@ -119,7 +120,7 @@ export default function WordingPage() {
           <li>Put the most important details first: names, date and city.</li>
           <li>Give every function its own date, time and venue, because guests often attend only some of them.</li>
           <li>Include a dress code if you have one; guests appreciate knowing early.</li>
-          <li>Add an RSVP date 2–3 weeks before the wedding so you can confirm catering numbers.</li>
+          <li>Add a “please reply by” date 2–3 weeks before the wedding so you can confirm catering numbers.</li>
           <li>Send one link instead of many PDFs and location pins, so you can update timings without resending.</li>
         </ul>
       </article>

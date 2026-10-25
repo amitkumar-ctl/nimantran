@@ -58,7 +58,7 @@ export function pastDateErrors(next: Dated, prev?: Dated, today = todayIST()): R
   });
   const wedding = next.weddingDate ?? prev?.weddingDate;
   if (!errors.rsvpDeadline && next.rsvpDeadline && wedding && next.rsvpDeadline > wedding && next.rsvpDeadline !== prev?.rsvpDeadline) {
-    errors.rsvpDeadline = 'RSVP date should be on or before the wedding';
+    errors.rsvpDeadline = 'The reply-by date should be on or before the wedding';
   }
   return errors;
 }

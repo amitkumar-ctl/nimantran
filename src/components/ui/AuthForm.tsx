@@ -54,6 +54,11 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
       {mode === 'signup' && field('name', 'Your name', 'text', 'name')}
       {field('email', 'Email', 'email', 'email')}
       {field('password', 'Password', 'password', mode === 'signup' ? 'new-password' : 'current-password')}
+      {mode === 'login' && (
+        <p className="-mt-2 text-right text-sm">
+          <Link href={values.email ? `/forgot-password?email=${encodeURIComponent(values.email)}` : '/forgot-password'} className="font-semibold text-maroon hover:underline">Forgot password?</Link>
+        </p>
+      )}
       {mutation.isError && !Object.keys(errors).length && (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">{mutation.error.message}</p>
       )}

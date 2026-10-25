@@ -108,7 +108,7 @@ function EntryRow({ inviteId, entry: e, rsvps }: { inviteId: string; entry: Shag
         <p className="font-semibold">{e.name}</p>
         <p className="text-xs text-muted">
           {METHOD_LABEL[e.method]} · {e.source === 'guest' ? 'Reported by guest' : 'Added by you'} · {new Date(e.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-          {guest && guest.name !== e.name && <> · RSVP: {guest.name}</>}
+          {guest && guest.name !== e.name && <> · replied as {guest.name}</>}
         </p>
         {e.note && <p className="mt-0.5 text-sm italic text-muted">“{e.note}”</p>}
       </div>
@@ -176,7 +176,7 @@ function EntryForm({ inviteId, entryId, rsvps, initial, title, onDone }: {
         <div>
           <label htmlFor="se-guest" className="label">Guest (optional)</label>
           <select id="se-guest" className="input" value={f.rsvpId ?? ''} onChange={(e) => pickGuest(e.target.value)}>
-            <option value="">Not on the RSVP list</option>
+            <option value="">Not on the guest list</option>
             {rsvps.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
         </div>

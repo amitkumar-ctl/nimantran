@@ -28,7 +28,7 @@ async function submitRsvp(slug: string, data: RsvpInput): Promise<{ updated: boo
     body: JSON.stringify(data),
   });
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw Object.assign(new Error(body.message ?? 'Could not send RSVP'), { fields: body.fields });
+  if (!res.ok) throw Object.assign(new Error(body.message ?? 'Could not send your reply'), { fields: body.fields });
   return body;
 }
 
@@ -53,14 +53,14 @@ function LiveRsvp({ slug, events }: { slug: string; events: string[] }) {
   const [editing, setEditing] = useState(false);
   const [justSaved, setJustSaved] = useState<'new' | 'updated' | null>(null);
 
-  if (isPending) return <div className="card h-72 animate-pulse" aria-busy="true" aria-label="Loading RSVP" />;
+  if (isPending) return <div className="card h-72 animate-pulse" aria-busy="true" aria-label="Loading reply form" />;
 
   if (data?.isOwner) {
     return (
       <div className="card p-6 text-center sm:p-8" role="note">
         <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-cream-2 text-inv-primary"><Users className="h-7 w-7" /></div>
         <p className="font-display text-2xl font-semibold text-inv-heading">This is your invitation 👋</p>
-        <p className="mx-auto mt-1 max-w-xs text-sm text-muted">Guests see the RSVP form here. Hosts can&apos;t RSVP to their own invite. Track every reply in your guest list.</p>
+        <p className="mx-auto mt-1 max-w-xs text-sm text-muted">Guests see the reply form here. Hosts can&apos;t reply to their own invite. Track every reply in your guest list.</p>
         <PageLink href={`/dashboard/invites/${data.inviteId}/guests`} className="btn btn-primary mt-5">View guest list</PageLink>
       </div>
     );
@@ -150,7 +150,7 @@ function RsvpFields({ slug, events, initial, preview = false, isUpdate = false, 
 
   return (
     <form onSubmit={onSubmit} className="card space-y-5 p-5 sm:p-6" noValidate>
-      {isUpdate && <p className="rounded-lg bg-cream-2 px-3 py-2 text-sm text-inv-heading">Editing your response. Change anything and press <b>Update RSVP</b>.</p>}
+      {isUpdate && <p className="rounded-lg bg-cream-2 px-3 py-2 text-sm text-inv-heading">Editing your response. Change anything and press <b>Update my reply</b>.</p>}
       <div>
         <label htmlFor="rsvp-name" className="label">Your name</label>
         <input id="rsvp-name" className="input" autoComplete="name" value={form.name} onChange={(e) => set('name', e.target.value)} aria-invalid={!!errors.name} placeholder="e.g. Rohan Sharma" />
@@ -224,7 +224,7 @@ function RsvpFields({ slug, events, initial, preview = false, isUpdate = false, 
       )}
 
       <button type="submit" disabled={mutation.isPending || preview} className="btn w-full bg-inv-primary py-3.5 text-[15px] text-white shadow-lg">
-        {mutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending…</> : isUpdate ? 'Update RSVP' : 'Send RSVP 💌'}
+        {mutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending…</> : isUpdate ? 'Update my reply' : 'Send my reply 💌'}
       </button>
       {onCancel && <button type="button" onClick={onCancel} className="btn btn-ghost w-full">Cancel</button>}
       {preview && <p className="text-center text-xs text-muted">Preview: guests fill this in on your invite link.</p>}

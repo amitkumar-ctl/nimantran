@@ -9,6 +9,11 @@ const userSchema = new Schema(
     // Google account id ("sub"); sparse so many users can have none.
     googleId: { type: String, unique: true, sparse: true },
     avatarUrl: { type: String, default: '' },
+    // Forgot password: sha256 of the emailed one-time token, and when it expires.
+    resetTokenHash: { type: String, select: false, index: { sparse: true } },
+    resetTokenExpires: { type: Date, select: false },
+    // Sessions issued before this moment stop working (set on password reset).
+    passwordChangedAt: { type: Date, default: null },
   },
   { timestamps: true },
 );

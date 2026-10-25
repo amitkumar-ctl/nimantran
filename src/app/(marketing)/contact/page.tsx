@@ -6,15 +6,15 @@ import { ContactForm } from '@/components/marketing/ContactForm';
 
 export const metadata: Metadata = {
   title: 'Help & contact',
-  description: `Get help with your ${site.name} wedding invitation: editing, sharing, RSVPs, shagun and privacy. Send us a message and we reply within one working day.`,
+  description: `Get help with your ${site.name} wedding invitation: editing, sharing, guest replies, shagun and privacy. Send us a message and we reply within one working day.`,
   alternates: { canonical: '/contact' },
 };
 
 const HELP: { q: string; a: React.ReactNode }[] = [
   { q: 'I changed something. Do I need to send the link again?', a: 'No. Save your changes and everyone who opens the same link sees the latest version, including venue and time changes.' },
   { q: 'Why can’t guests pay shagun from the button?', a: 'UPI apps block “pay” links to personal UPI IDs for safety. Guests copy your UPI ID or scan the QR code instead, then pay in their own app. Money goes straight to you; we never touch it.' },
-  { q: 'A guest says their RSVP didn’t go through.', a: 'Ask them to open the invite again in the same phone browser: their reply is remembered there and they can edit it. Every RSVP appears instantly on your Guests page.' },
-  { q: 'How do I remove an invite I made by mistake?', a: <>Open the invite in your dashboard and use <b>Delete invite</b> at the bottom. This also deletes its RSVPs and shagun register, permanently.</> },
+  { q: 'A guest says their reply didn’t go through.', a: 'Ask them to open the invite again in the same phone browser: their reply is remembered there and they can edit it. Every reply appears instantly on your Guests page.' },
+  { q: 'How do I remove an invite I made by mistake?', a: <>Open the invite in your dashboard and use <b>Delete invite</b> at the bottom. This also deletes its guest replies and shagun register, permanently.</> },
   { q: 'Can I change the language or design after sharing?', a: <>Yes. Pick any design in the editor; your link stays the same. Use the language row in <Link href="/templates" className="underline">Templates</Link> to find designs in Hindi, Tamil, Bengali, Urdu and more.</> },
   { q: 'How do I delete my account and data?', a: <>Choose “Privacy or delete my data” below and tell us your account email. See the <Link href="/privacy" className="underline">Privacy Policy</Link> for what we keep and why.</> },
 ];
