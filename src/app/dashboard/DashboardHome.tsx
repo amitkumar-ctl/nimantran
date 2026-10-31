@@ -54,7 +54,7 @@ export function DashboardHome() {
       )}
 
       {hasInvites && (
-        <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-6 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {invites!.map((inv, i) => (
             <li key={inv.id} data-tour={i === 0 ? 'invite-card' : undefined} className="card overflow-hidden">
               <ThemeSwatch theme={inv.theme} names={[inv.partner1, inv.partner2]} />
@@ -65,7 +65,8 @@ export function DashboardHome() {
                     {inv.published ? 'Live' : 'Draft'}
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                {/* One row: Edit · replies/Guests · View, and delete on the right. */}
+                <div className="flex flex-wrap items-center gap-2 [&>.btn]:whitespace-nowrap">
                   <PageLink href={`/dashboard/invites/${inv.id}`} className="btn btn-outline btn-sm"><Pencil className="h-3.5 w-3.5" /> Edit</PageLink>
                   <PageLink href={`/dashboard/invites/${inv.id}/guests`} className="btn btn-outline btn-sm"><Users className="h-3.5 w-3.5" /> {inv.rsvpEnabled || inv.rsvpCount ? `${inv.rsvpCount} ${inv.rsvpCount === 1 ? 'reply' : 'replies'}` : 'Guests'}</PageLink>
                   {inv.published && (

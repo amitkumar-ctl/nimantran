@@ -164,7 +164,7 @@ function Swatch({ design, names: [a, b], blessing, size }: SwatchProps) {
         <text x="200" y="250" fontSize="28" style={{ fontFamily: 'var(--font-cormorant), serif', fontStyle: 'italic' }}>&amp;</text>
         <text x="200" y="300" fontSize={fit(b.toUpperCase(), 52, 330, 0.78)}>{b.toUpperCase()}</text>
       </g>
-      <svg x="0" y="320" width="400" height="180" viewBox="0 150 390 270" preserveAspectRatio="xMidYMax meet">
+      {size === 'lg' && <svg x="0" y="320" width="400" height="180" viewBox="0 150 390 270" preserveAspectRatio="xMidYMax meet">
         <path d="M0 260C60 230 110 250 160 235S260 215 300 232 370 225 390 238V420H0Z" fill={c.deep} opacity=".55" />
         <g fill={c.deep}>
           <rect x="40" y="250" width="310" height="170" /><rect x="20" y="300" width="350" height="120" />
@@ -174,7 +174,7 @@ function Swatch({ design, names: [a, b], blessing, size }: SwatchProps) {
         </g>
         <g fill={c.accent}>{Array.from({ length: 9 }, (_, i) => <path key={i} d={arch(52 + i * 32, 272, 12, 20)} />)}</g>
         <path d="M175 420V360C175 342 185 334 195 330C205 334 215 342 215 360V420Z" fill={c.accent} opacity=".85" />
-      </svg>
+      </svg>}
     </SwatchSvg>
   );
 }
