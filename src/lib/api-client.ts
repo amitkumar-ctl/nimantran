@@ -44,8 +44,12 @@ export const api = {
     request<{ user: SessionUser }>('/api/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   google: (credential: string) =>
     request<{ user: SessionUser }>('/api/auth/google', { method: 'POST', body: JSON.stringify({ credential }) }),
+  forgotPassword: (email: string) => request<{ ok: true }>('/api/auth/forgot', { method: 'POST', body: JSON.stringify({ email }) }),
+  resetPassword: (data: { token: string; password: string }) =>
+    request<{ user: SessionUser }>('/api/auth/reset', { method: 'POST', body: JSON.stringify(data) }),
   logout: () => request<{ ok: true }>('/api/auth/logout', { method: 'POST' }),
-  me: () => request<{ user: SessionUser }>('/api/auth/me').then((r) => r.user),
+  /** The signed-in user, or null when signed out. */
+  me: () => request<{ user: SessionUser | null }>('/api/auth/me').then((r) => r.user),
 
   listInvites: () => request<{ invites: InviteSummary[] }>('/api/invites').then((r) => r.invites),
   createInvite: (data: { partner1: string; partner2: string; weddingDate: string; theme: Theme }) =>

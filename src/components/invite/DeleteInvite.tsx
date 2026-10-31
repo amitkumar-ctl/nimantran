@@ -50,9 +50,9 @@ export function DeleteInvite({ id, published, rsvpCount = 0, onDeleted, variant 
   }
 
   const warning = published
-    ? `It’s live: the link you shared will stop working${rsvpCount ? ` and ${rsvpCount} RSVP${rsvpCount === 1 ? '' : 's'} will be deleted` : ''}.`
+    ? `It’s live: the link you shared will stop working${rsvpCount ? ` and ${rsvpCount} guest repl${rsvpCount === 1 ? 'y' : 'ies'} will be deleted` : ''}.`
     : rsvpCount
-      ? `${rsvpCount} RSVP${rsvpCount === 1 ? '' : 's'} will be deleted too.`
+      ? `${rsvpCount} guest repl${rsvpCount === 1 ? 'y' : 'ies'} will be deleted too.`
       : 'This draft will be removed.';
 
   return (

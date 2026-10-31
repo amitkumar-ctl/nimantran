@@ -85,6 +85,11 @@ export const signupSchema = z.object({
   email: z.email('Enter a valid email').trim().toLowerCase(),
   password: z.string().min(8, 'At least 8 characters').max(100),
 });
+export const forgotSchema = z.object({ email: z.email('Enter a valid email').trim().toLowerCase() });
+export const resetSchema = z.object({
+  token: z.string().min(20, 'This reset link is incomplete').max(200),
+  password: z.string().min(8, 'At least 8 characters').max(100),
+});
 export const loginSchema = z.object({
   email: z.email('Enter a valid email').trim().toLowerCase(),
   password: z.string().min(1, 'Enter your password').max(100),

@@ -29,7 +29,7 @@ export default function PrivacyPage() {
   const mail = <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a>;
   return (
     <LegalPage title="Privacy Policy" sections={SECTIONS} intro={
-      <p>{site.name} helps couples make wedding invitation websites and collect RSVPs. This policy explains what information we collect from couples (“hosts”) and their guests, why, and the choices you have. It is written for India and follows the Digital Personal Data Protection Act, 2023 and the Information Technology Act, 2000. In short: we only collect what the invitation needs, we never sell it, and we never handle your money.</p>
+      <p>{site.name} helps couples make wedding invitation websites and collect guest replies (RSVPs). This policy explains what information we collect from couples (“hosts”) and their guests, why, and the choices you have. It is written for India and follows the Digital Personal Data Protection Act, 2023 and the Information Technology Act, 2000. In short: we only collect what the invitation needs, we never sell it, and we never handle your money.</p>
     }>
       <H2 id="who">1. Who we are</H2>
       <p>{site.name} ({site.url.replace(/^https?:\/\//, '')}){site.legal.operator !== site.name && <> is operated by {site.legal.operator}</>} (“we”, “us”). For anything about your data, write to {mail} or use our <Link href="/contact">contact form</Link>.</p>
@@ -38,12 +38,12 @@ export default function PrivacyPage() {
       <h3>From hosts (people who create invitations)</h3>
       <ul>
         <li><b>Account details:</b> your name and email. If you sign up with a password, we store only a one-way hash of it (bcrypt), never the password itself. If you use Google sign-in, we receive your name, email, Google account ID and profile picture link from Google.</li>
-        <li><b>Invitation content:</b> what you type into an invite: names, blessing and message, dates, times, venues and map links, functions, RSVP deadline, and your UPI ID and payee name if you add the shagun feature.</li>
+        <li><b>Invitation content:</b> what you type into an invite: names, blessing and message, dates, times, venues and map links, functions, reply-by date, and your UPI ID and payee name if you add the shagun feature.</li>
         <li><b>Shagun register:</b> entries you add or confirm (guest name, amount, method, note).</li>
       </ul>
       <h3>From guests (people who open an invitation)</h3>
       <ul>
-        <li><b>RSVP:</b> name, phone number (optional), whether you are attending, how many people, which functions, dietary notes and a message to the couple.</li>
+        <li><b>Reply (RSVP):</b> name, phone number (optional), whether you are attending, how many people, which functions, dietary notes and a message to the couple.</li>
         <li><b>Shagun report (optional):</b> your name, the amount you say you sent, how you sent it, and a note.</li>
       </ul>
       <h3>From anyone who contacts us</h3>
@@ -57,7 +57,7 @@ export default function PrivacyPage() {
 
       <H2 id="use">3. How we use it</H2>
       <ul>
-        <li>To run the service: create your account, save and show your invitation, record RSVPs and show them to the host, and keep you signed in.</li>
+        <li>To run the service: create your account, save and show your invitation, record guests’ replies and show them to the host, and keep you signed in.</li>
         <li>To support you: answer messages and fix problems you report.</li>
         <li>To keep the service safe: prevent spam, abuse and fraud (for example, limiting how often a form can be submitted).</li>
         <li>To improve it: understand which features and designs are used, using aggregated statistics.</li>
@@ -65,8 +65,8 @@ export default function PrivacyPage() {
       <p>We process your information because you give it to us to use the service (your consent), and for legitimate uses allowed by law such as security and responding to legal requests. You can withdraw consent at any time by deleting your invitations or account (see <a href="#rights">Your rights</a>). We do not use your information for advertising and we do not sell it.</p>
 
       <H2 id="guests">4. Guests’ information</H2>
-      <p>When a guest RSVPs, their answers go to the couple who sent the invitation; that is the point of an RSVP. The host can see, edit and download their guest list (for example as a spreadsheet), and decides what to do with it. We store guest replies on the host’s behalf to provide the service. Hosts must only use their guests’ details for their wedding and should not share them further.</p>
-      <p>Invitation pages can be seen by anyone who has the link, and are hidden from Google and other search engines. RSVP answers are never shown on the public page.</p>
+      <p>When a guest replies, their answers go to the couple who sent the invitation; that is the point of asking guests to reply (“RSVP”). The host can see, edit and download their guest list (for example as a spreadsheet), and decides what to do with it. We store guest replies on the host’s behalf to provide the service. Hosts must only use their guests’ details for their wedding and should not share them further.</p>
+      <p>Invitation pages can be seen by anyone who has the link, and are hidden from Google and other search engines. Guests’ replies are never shown on the public page.</p>
 
       <H2 id="share">5. Who we share it with</H2>
       <p>We share information only with service providers who help us run {site.name}, under contracts that require them to protect it and use it only for us:</p>
@@ -85,7 +85,7 @@ export default function PrivacyPage() {
         <tbody>
           <tr><td>nm_session</td><td>Keeps a host signed in (secure, not readable by scripts).</td><td>30 days</td></tr>
           <tr><td>nm_li</td><td>Tells the page to show “My invites” instead of “Log in”. Grants no access.</td><td>30 days</td></tr>
-          <tr><td>nm_rsvp_…, nm_shg_…</td><td>A private random key that lets a guest edit their own RSVP or shagun report later. Only sent to that invitation’s RSVP page; we store only a scrambled (hashed) copy.</td><td>1 year</td></tr>
+          <tr><td>nm_rsvp_…, nm_shg_…</td><td>A private random key that lets a guest edit their own reply or shagun report later. Only sent to that invitation’s reply page; we store only a scrambled (hashed) copy.</td><td>1 year</td></tr>
           <tr><td>nm_tour_… (local storage)</td><td>Remembers that you have seen the guided tour.</td><td>Until cleared</td></tr>
         </tbody>
       </table>
@@ -95,7 +95,7 @@ export default function PrivacyPage() {
 
       <H2 id="keep">8. How long we keep it</H2>
       <ul>
-        <li><b>Invitations, RSVPs and shagun entries:</b> until the host deletes the invitation (which deletes its RSVPs and shagun register too) or their account.</li>
+        <li><b>Invitations, replies and shagun entries:</b> until the host deletes the invitation (which deletes its replies and shagun register too) or their account.</li>
         <li><b>Accounts:</b> until you ask us to delete your account.</li>
         <li><b>Messages to us:</b> as long as needed to help you, and no longer than two years.</li>
         <li><b>Technical logs:</b> a short period kept by our hosting provider for security.</li>
@@ -113,7 +113,7 @@ export default function PrivacyPage() {
         <li>delete it (hosts can delete any invitation in the editor; for your whole account, contact us);</li>
         <li>handle a complaint (grievance), and nominate someone to act for you if you are unable to.</li>
       </ul>
-      <p>To make a request, choose “Privacy or delete my data” on our <Link href="/contact">contact page</Link> or email {mail} from the address on your account. We will reply as soon as we can and within the time the law requires. Guests who want their RSVP changed or removed can edit it from the same browser, ask the couple, or contact us. If you are not satisfied with our answer, you may complain to the Data Protection Board of India.</p>
+      <p>To make a request, choose “Privacy or delete my data” on our <Link href="/contact">contact page</Link> or email {mail} from the address on your account. We will reply as soon as we can and within the time the law requires. Guests who want their reply changed or removed can edit it from the same browser, ask the couple, or contact us. If you are not satisfied with our answer, you may complain to the Data Protection Board of India.</p>
 
       <H2 id="children">11. Children</H2>
       <p>Accounts are for adults (18 or over). We do not knowingly collect personal data from children. If you believe a child has given us their details, contact us and we will delete them.</p>

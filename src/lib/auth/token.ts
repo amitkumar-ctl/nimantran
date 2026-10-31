@@ -24,11 +24,20 @@ export function signSessionToken(userId: string) {
 
 /** userId if the token is genuine and not expired, otherwise null. */
 export async function verifySessionToken(token: string | undefined): Promise<string | null> {
+  return (await readSessionToken(token))?.userId ?? null;
+}
+
+/** userId + when the session was issued (seconds), or null. */
+export async function readSessionToken(token: string | undefined): Promise<{ userId: string; iat: number } | null> {
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secret(), { algorithms: ['HS256'] });
-    return payload.sub ?? null;
+    return payload.sub ? { userId: payload.sub, iat: payload.iat ?? 0 } : null;
   } catch {
     return null;
   }
 }
+
+/** A session issued before the password was last changed is no longer valid. */
+export const issuedBeforePasswordChange = (iat: number, changedAt: Date | null | undefined) =>
+  !!changedAt && Math.floor(changedAt.getTime() / 1000) > iat;

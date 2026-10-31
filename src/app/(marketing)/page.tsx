@@ -10,15 +10,15 @@ import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
 import { JsonLd } from '@/components/marketing/JsonLd';
 
 export const metadata: Metadata = {
-  title: { absolute: `Digital Wedding Invitation Website with RSVP | ${site.name}` },
+  title: { absolute: `Digital Wedding Invitation Website with Guest Replies (RSVP) | ${site.name}` },
   description: site.description,
   alternates: { canonical: '/' },
-  openGraph: { title: `Digital Wedding Invitation Website with RSVP | ${site.name}`, description: site.description, url: '/' },
+  openGraph: { title: `Digital Wedding Invitation Website with Guest Replies (RSVP) | ${site.name}`, description: site.description, url: '/' },
 };
 
 const FEATURES = [
   { icon: CalendarHeart, title: 'Every function, one link', text: 'Haldi, mehndi, sangeet, wedding and reception: dates, times and venues in one beautiful page.' },
-  { icon: Users, title: 'RSVP & live guest list', text: 'Guests reply in seconds. See who is coming, headcount per function and dietary needs, and export to Excel.' },
+  { icon: Users, title: 'Guest replies & live guest list', text: 'Guests tell you in one tap if they’re coming (the “RSVP”). See who is coming, headcount per function and dietary needs, and export to Excel.' },
   { icon: MapPin, title: 'Venue maps', text: 'One tap opens Google Maps for each venue, so no more "bhaiya, location bhejo" calls.' },
   { icon: IndianRupee, title: 'UPI shagun', text: 'Relatives who can’t attend can bless you through any UPI app, straight from the invite.' },
   { icon: Timer, title: 'Live countdown', text: 'A countdown to your muhurat builds excitement every time guests open the link.' },
@@ -28,13 +28,14 @@ const FEATURES = [
 const STEPS = [
   { icon: Pencil, title: 'Add your details', text: 'Names, wedding date and your functions. We pre-fill the usual ceremonies so you just edit.' },
   { icon: Sparkles, title: 'Pick a design', text: 'Royal maroon, marigold, mehndi garden or midnight: switch anytime, see changes live.' },
-  { icon: MessageCircleHeart, title: 'Share & track RSVPs', text: 'Publish, send one WhatsApp message to everyone, and watch responses come in.' },
+  { icon: MessageCircleHeart, title: 'Share & see who’s coming', text: 'Publish, send one WhatsApp message to everyone, and watch responses come in.' },
 ];
 
 const FAQ = [
-  { q: 'What is a digital wedding invitation website?', a: 'It is a single web page for your wedding that guests open from a link. It shows your names, every function with date, time and venue, a map link for each venue, a live countdown and an RSVP form, and it works on any phone without installing an app.' },
+  { q: 'What is a digital wedding invitation website?', a: 'It is a single web page for your wedding that guests open from a link. It shows your names, every function with date, time and venue, a map link for each venue, a live countdown and a reply form (RSVP) so guests can tell you if they’re coming, and it works on any phone without installing an app.' },
   { q: 'How do I share my wedding invitation on WhatsApp?', a: 'After you publish, tap the WhatsApp button in your dashboard or copy your invite link and paste it into any chat or group. WhatsApp shows a preview card with your names and wedding date.' },
-  { q: 'How does RSVP work for guests?', a: 'Guests open your link, enter their name, choose whether they are attending, how many people are coming and which functions they will join. You see every response instantly in your guest list and can download it as an Excel-compatible CSV file.' },
+  { q: 'What does RSVP mean?', a: 'RSVP is short for the French “Répondez s’il vous plaît”, which means “please reply”. On a wedding invitation it asks guests to tell you whether they are coming, so you can plan food and seating. On Nimantran guests simply tap “Joyfully yes” or “Sadly no” on your invite.' },
+  { q: 'How do guests reply to the invitation?', a: 'Guests open your link, enter their name, choose whether they are attending, how many people are coming and which functions they will join. You see every response instantly in your guest list and can download it as an Excel-compatible CSV file.' },
   { q: 'Can I edit the invitation after sharing it?', a: 'Yes. Change venues, timings or add a function anytime. Everyone who opens the same link sees the latest details, with no need to resend anything.' },
   { q: 'Is my wedding invitation private?', a: 'Your invite is only visible to people who have the link. Invitation pages are hidden from Google and other search engines, and the link contains a random code so it cannot be guessed.' },
   { q: 'Can guests send shagun online?', a: 'Yes. Add your UPI ID and guests get a “Send Shagun” button that opens Google Pay, PhonePe, Paytm or any UPI app on their phone. Money goes directly to your account; we never touch it.' },

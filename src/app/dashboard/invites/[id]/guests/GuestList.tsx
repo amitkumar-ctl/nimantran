@@ -130,7 +130,7 @@ export function GuestList({ id }: { id: string }) {
       {rsvps.isError && <p className="card mt-4 p-4 text-red-800">{rsvps.error.message}</p>}
       {!rsvps.isPending && shown.length === 0 && (
         <div className="card mt-4 p-10 text-center text-muted">
-          {stats.responses === 0 ? 'No RSVPs yet. Share your invite link on WhatsApp to start collecting responses.' : 'No guests match this filter.'}
+          {stats.responses === 0 ? 'No replies yet. Share your invite link on WhatsApp and replies will appear here.' : 'No guests match this filter.'}
         </div>
       )}
 

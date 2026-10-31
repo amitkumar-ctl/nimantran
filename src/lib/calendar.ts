@@ -45,7 +45,7 @@ const utcStamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d
 const titleOf = (ev: InviteEvent, invite: Pick<InviteData, 'partner1' | 'partner2'>) => `${ev.name}: ${invite.partner1} & ${invite.partner2}`;
 const placeOf = (ev: InviteEvent, invite: Pick<InviteData, 'venue' | 'city'>) =>
   [ev.venue || invite.venue, invite.city].filter(Boolean).join(', ');
-const detailsOf = (ev: InviteEvent, link: string) => [ev.note, `Invitation, RSVP and map: ${link}`].filter(Boolean).join('\n\n');
+const detailsOf = (ev: InviteEvent, link: string) => [ev.note, `Invitation, map and reply: ${link}`].filter(Boolean).join('\n\n');
 
 /** Opens Google Calendar with the function filled in. */
 export function googleCalendarUrl(ev: InviteEvent, invite: Pick<InviteData, 'partner1' | 'partner2' | 'venue' | 'city'>, link: string) {

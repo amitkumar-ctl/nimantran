@@ -11,9 +11,9 @@ import { TemplateSearch } from './TemplateSearch';
 const count = templateCount().toLocaleString('en-IN');
 
 export const metadata: Metadata = {
-  title: `Wedding Invitation Templates: ${count}+ Indian Designs with RSVP`,
+  title: `Wedding Invitation Templates: ${count}+ Indian Designs with Guest Replies (RSVP)`,
   description:
-    `Search ${count}+ digital wedding invitation templates by colour, tradition and motif: royal maroon, haldi, mehndi, sangeet, South Indian kasavu, nikah, pastel and beach designs. All include RSVP, maps, countdown and UPI shagun.`,
+    `Search ${count}+ digital wedding invitation templates by colour, tradition and motif: royal maroon, haldi, mehndi, sangeet, South Indian kasavu, nikah, pastel and beach designs. All include guest replies (RSVP), maps, countdown and UPI shagun.`,
   alternates: { canonical: '/templates' },
 };
 

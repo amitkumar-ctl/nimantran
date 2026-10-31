@@ -88,7 +88,7 @@ export async function POST(req: Request, ctx: Ctx) {
   if (!invite) return error('This invitation is no longer available', 404);
   if (invite.rsvpEnabled === false) return error('This invitation isn’t taking replies online.', 403);
   if (await isOwner(invite.owner)) {
-    return error('This is your own invitation. Guests RSVP here; you can see their replies in your guest list.', 403);
+    return error('This is your own invitation. Guests reply here; you can see their replies in your guest list.', 403);
   }
 
   const validEvents = new Set((invite.events ?? []).map((e) => e.name));

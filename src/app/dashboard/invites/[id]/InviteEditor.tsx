@@ -323,7 +323,7 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
 
       <section data-tour="ed-delete" className="rounded-2xl border border-red-100 bg-white/60 p-5 sm:p-6">
         <h2 className="font-display text-xl font-semibold text-maroon-900">Delete invite</h2>
-        <p className="mb-3 text-sm text-muted">Created by mistake? Remove this invite and its RSVPs for good.</p>
+        <p className="mb-3 text-sm text-muted">Created by mistake? Remove this invite and its guest replies for good.</p>
         <DeleteInvite
           id={draft.id}
           published={draft.published}
