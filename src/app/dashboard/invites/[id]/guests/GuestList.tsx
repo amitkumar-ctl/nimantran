@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Compass, Download, Plus, RefreshCw, Search } from 'lucide-react';
+import { ArrowLeft, Compass, Download, Lock, Plus, RefreshCw, Search } from 'lucide-react';
+import { PremiumOffer, usePlan } from '@/components/premium/Upgrade';
 import { api, queryKeys } from '@/lib/api-client';
 import { PageLink } from '@/components/ui/PageLink';
 import { inr, ShagunRegister, type Prefill } from './ShagunRegister';
@@ -18,6 +19,10 @@ export function GuestList({ id }: { id: string }) {
   const [prefill, setPrefill] = useState<Prefill>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
+  const plan = usePlan();
+  const [offer, setOffer] = useState(false);
+  // Download is a Premium perk while payments are on.
+  const locked = !!plan?.enabled && invite.data?.premium === false;
 
   const stats = useMemo(() => {
     const list = rsvps.data ?? [];
@@ -75,9 +80,18 @@ export function GuestList({ id }: { id: string }) {
           <button type="button" className="btn btn-outline btn-sm" onClick={() => { rsvps.refetch(); shagun.refetch(); }} disabled={rsvps.isFetching}>
             <RefreshCw className={`h-4 w-4 ${rsvps.isFetching ? 'animate-spin' : ''}`} /> Refresh
           </button>
-          <a href={`/api/invites/${id}/rsvps?format=csv`} data-tour="gl-download" className="btn btn-primary btn-sm"><Download className="h-4 w-4" /> Guest list (CSV)</a>
+          {locked ? (
+            <button type="button" data-tour="gl-download" className="btn btn-primary btn-sm" aria-expanded={offer} onClick={() => setOffer((o) => !o)}><Lock className="h-4 w-4" /> Guest list (CSV)</button>
+          ) : (
+            <a href={`/api/invites/${id}/rsvps?format=csv`} data-tour="gl-download" className="btn btn-primary btn-sm"><Download className="h-4 w-4" /> Guest list (CSV)</a>
+          )}
         </div>
       </div>
+      {locked && offer && (
+        <div className="mb-6 max-w-xl">
+          <PremiumOffer inviteId={id} reason="Downloading the guest list as a spreadsheet comes with Premium. Everyone’s replies stay visible here for free." />
+        </div>
+      )}
 
       {/* Counters: replies, who's coming (and how many people), shagun collected */}
       <div data-tour="gl-counts" className="grid grid-cols-2 gap-3 lg:grid-cols-4">

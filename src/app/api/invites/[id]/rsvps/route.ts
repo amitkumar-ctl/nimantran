@@ -3,6 +3,7 @@ import { Rsvp } from '@/lib/models/Rsvp';
 import { Shagun } from '@/lib/models/Shagun';
 import { error, json, requireUser, validId } from '@/lib/api-helpers';
 import type { RsvpData } from '@/lib/types';
+import { hasPerks } from '@/lib/payments/config';
 
 // Spreadsheet apps execute cells starting with = + - @ as formulas, so
 // prefix them (CSV injection protection).
@@ -21,7 +22,7 @@ export async function GET(req: Request, ctx: RouteContext<'/api/invites/[id]/rsv
   const { id } = await ctx.params;
   if (!validId(id)) return error('Invite not found', 404);
 
-  const invite = await Invite.findOne({ _id: id, owner: auth.userId }, { slug: 1, partner1: 1, partner2: 1 }).lean();
+  const invite = await Invite.findOne({ _id: id, owner: auth.userId }, { slug: 1, partner1: 1, partner2: 1, premium: 1 }).lean();
   if (!invite) return error('Invite not found', 404);
 
   const rows = await Rsvp.find({ invite: invite._id }).sort({ createdAt: -1 }).lean();
@@ -31,6 +32,7 @@ export async function GET(req: Request, ctx: RouteContext<'/api/invites/[id]/rsv
   }));
 
   if (new URL(req.url).searchParams.get('format') === 'csv') {
+    if (!hasPerks(invite)) return error('Guest list download comes with Premium.', 402);
     // Shagun linked to each guest (received + reported by the guest).
     const shagun = new Map<string, number>();
     for (const s of await Shagun.find({ invite: invite._id, rsvp: { $ne: null } }, { rsvp: 1, amount: 1 }).lean()) {

@@ -6,6 +6,7 @@ import { InviteView } from '@/components/invite/InviteView';
 import { RsvpForm } from '@/components/invite/RsvpForm';
 import { Shagun } from '@/components/invite/Shagun';
 import { MadeWith } from '@/components/invite/MadeWith';
+import { pagePath } from '@/lib/links';
 
 type Props = PageProps<'/i/[slug]'>;
 
@@ -28,8 +29,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Personal invitations stay out of search results. Link previews
     // (WhatsApp etc.) still work because they read the Open Graph tags.
     robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
-    alternates: { canonical: `/i/${slug}` },
-    openGraph: { title: `${couple} are getting married 💍`, description, url: `/i/${slug}`, type: 'website' },
+    alternates: { canonical: pagePath(invite) },
+    openGraph: { title: `${couple} are getting married 💍`, description, url: pagePath(invite), type: 'website' },
     twitter: { title: `${couple} are getting married 💍`, description },
   };
 }
@@ -49,7 +50,7 @@ export default async function InvitePage({ params }: Props) {
         rsvpSlot={<RsvpForm slug={invite.slug} events={invite.events.map((e) => e.name)} />}
         shagunSlot={<Shagun upiId={invite.upiId} upiName={invite.upiName} couple={couple} slug={invite.slug} />}
       />
-      <MadeWith />
+      {!invite.premium && <MadeWith />}
     </>
   );
 }

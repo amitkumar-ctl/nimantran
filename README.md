@@ -119,6 +119,19 @@ API (route handlers in `src/app/api`): `auth/{signup,login,google,logout,me}`,
   invitation wording", "wedding hashtag ideas", "how to make a wedding
   website"). Each one is a new way to be found.
 
+## Payments (Premium, Razorpay)
+
+Off by default. Premium is a one-time payment per invite that adds a short link (`getnimantran.com/amit-nikita`), removes the "Made with Nimantran" footer, and unlocks unlimited family cards (free: 5) and the guest list download. With `PAYMENTS_ENABLED=false` nothing about Premium is shown and there are no limits.
+
+To switch it on:
+1. Activate your Razorpay account (KYC). Razorpay checks that the site has Pricing, Terms, Privacy, Refund policy and Contact pages: all exist.
+2. Razorpay → Account & Settings → API Keys: put `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in the environment (start with `rzp_test_` keys).
+3. Razorpay → Webhooks → Add webhook: URL `https://<your domain>/api/payments/webhook`, events `payment.captured`, `order.paid`, `refund.processed`, and a secret you also set as `RAZORPAY_WEBHOOK_SECRET`.
+4. Set `PAYMENTS_ENABLED=true` (and `PREMIUM_PRICE_PAISE` / `PREMIUM_MRP_PAISE`), then redeploy.
+5. Make one test payment with the test keys (Razorpay's test UPI ID `success@razorpay` works), then swap in live keys.
+
+Refunds: issue them in the Razorpay dashboard; the webhook switches the invite back to free (its short link keeps redirecting).
+
 ## Security notes
 
 - Passwords hashed with bcrypt (12 rounds). Login timing doesn't reveal

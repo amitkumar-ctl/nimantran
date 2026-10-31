@@ -68,6 +68,7 @@ export function SiteFooter() {
           <h2 className="mb-3 font-display text-lg font-semibold text-gold-200">Get started</h2>
           <ul className="space-y-2 text-sm">
             <li><Link className="hover:text-white" href="/signup">Create your invite</Link></li>
+            <li><Link className="hover:text-white" href="/pricing">Pricing</Link></li>
             <li><Link className="hover:text-white" href="/login">Log in</Link></li>
           </ul>
         </div>
@@ -77,6 +78,7 @@ export function SiteFooter() {
         <nav aria-label="Legal" className="flex gap-4">
           <Link className="hover:text-white" href="/privacy">Privacy Policy</Link>
           <Link className="hover:text-white" href="/terms">Terms of Service</Link>
+          <Link className="hover:text-white" href="/refund-policy">Refunds</Link>
           <Link className="hover:text-white" href="/contact">Contact</Link>
         </nav>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { sharePath } from '@/lib/links';
 import { useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarHeart, Compass, ExternalLink, Loader2, Pencil, Plus, Users } from 'lucide-react';
@@ -61,8 +62,11 @@ export function DashboardHome() {
               <div className="p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <p className="flex items-center gap-1.5 text-sm text-muted"><CalendarHeart className="h-4 w-4" />{formatLongDate(inv.weddingDate)}</p>
-                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${inv.published ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-                    {inv.published ? 'Live' : 'Draft'}
+                  <span className="flex flex-none gap-1.5">
+                    {inv.premium && <span className="rounded-full bg-[#fff3d1] px-2 py-0.5 text-[11px] font-semibold text-[#7a5410]">Premium</span>}
+                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${inv.published ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                      {inv.published ? 'Live' : 'Draft'}
+                    </span>
                   </span>
                 </div>
                 {/* One row: Edit · replies/Guests · View, and delete on the right. */}
@@ -70,7 +74,7 @@ export function DashboardHome() {
                   <PageLink href={`/dashboard/invites/${inv.id}`} className="btn btn-outline btn-sm"><Pencil className="h-3.5 w-3.5" /> Edit</PageLink>
                   <PageLink href={`/dashboard/invites/${inv.id}/guests`} className="btn btn-outline btn-sm"><Users className="h-3.5 w-3.5" /> {inv.rsvpEnabled || inv.rsvpCount ? `${inv.rsvpCount} ${inv.rsvpCount === 1 ? 'reply' : 'replies'}` : 'Guests'}</PageLink>
                   {inv.published && (
-                    <a href={`/i/${inv.slug}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm"><ExternalLink className="h-3.5 w-3.5" /> View</a>
+                    <a href={sharePath(inv)} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm"><ExternalLink className="h-3.5 w-3.5" /> View</a>
                   )}
                   <DeleteInvite id={inv.id} published={inv.published} rsvpCount={inv.rsvpCount} tour={i === 0 ? 'invite-delete' : undefined} />
                 </div>

@@ -129,3 +129,12 @@ export const personalEntrySchema = z.object({ name: trimmed(40).min(2, 'Enter a 
 export const personalAddSchema = z.object({ entries: z.array(personalEntrySchema).min(1).max(200) });
 export const personalUpdateSchema = z.object({ name: trimmed(40).min(2, 'Enter a name').optional(), phone: familyPhone.optional(), sent: z.boolean().optional() });
 export type PersonalEntry = z.infer<typeof personalEntrySchema>;
+
+// ---- Payments (Premium) ----
+const rzpId = (prefix: string) => z.string().trim().regex(new RegExp(`^${prefix}_[A-Za-z0-9]{6,40}$`), 'Invalid payment reference');
+export const paymentVerifySchema = z.object({
+  razorpay_order_id: rzpId('order'),
+  razorpay_payment_id: rzpId('pay'),
+  razorpay_signature: z.string().trim().regex(/^[0-9a-f]{64}$/i, 'Invalid payment signature'),
+});
+export const customLinkSchema = z.object({ customSlug: z.string().trim().toLowerCase().max(60) });

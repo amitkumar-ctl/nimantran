@@ -34,6 +34,12 @@ const inviteSchema = new Schema(
     upiId: { type: String, default: '' },
     upiName: { type: String, default: '' },
     rsvpEnabled: { type: Boolean, default: true },
+    // Premium (paid once per invite, see lib/payments). The custom link is the
+    // short name chosen after paying; `slug` never changes, so links already
+    // shared keep working.
+    premium: { type: Boolean, default: false },
+    premiumAt: { type: Date, default: null },
+    customSlug: { type: String, unique: true, sparse: true },
   },
   { timestamps: true },
 );

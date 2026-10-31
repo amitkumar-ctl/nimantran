@@ -16,6 +16,8 @@ type EditorState = {
   removeEvent: (id: string) => void;
   moveEvent: (id: string, dir: -1 | 1) => void;
   markSaved: (invite: InviteData) => void;
+  /** Server-side changes (Premium, custom link) merged in without touching unsaved edits. */
+  patchSaved: (patch: Partial<InviteData>) => void;
 };
 
 const newId = () => Math.random().toString(36).slice(2, 10);
@@ -44,4 +46,5 @@ export const useEditorStore = create<EditorState>((set) => ({
       return { draft: { ...s.draft, events }, dirty: true };
     }),
   markSaved: (invite) => set({ draft: invite, dirty: false }),
+  patchSaved: (patch) => set((s) => (s.draft ? { draft: { ...s.draft, ...patch } } : s)),
 }));

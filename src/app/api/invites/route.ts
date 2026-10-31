@@ -26,6 +26,8 @@ export async function GET() {
     weddingDate: i.weddingDate, theme: i.theme as InviteSummary['theme'], updatedAt: (i.updatedAt as Date).toISOString(),
     rsvpCount: counts.get(i._id.toString()) ?? 0,
     rsvpEnabled: i.rsvpEnabled !== false,
+    premium: i.premium === true,
+    customSlug: i.customSlug ?? '',
   }));
   return json({ invites: data });
 }
