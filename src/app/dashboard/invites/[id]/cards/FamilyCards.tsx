@@ -69,14 +69,15 @@ export function FamilyCards({ id }: { id: string }) {
     <div className="container-page py-8 sm:py-10">
       <PageLink href={`/dashboard/invites/${id}`} className="btn btn-ghost btn-sm -ml-3 mb-2"><ArrowLeft className="h-4 w-4" /> Back to editor</PageLink>
       <h1 className="font-display text-4xl font-semibold text-maroon-900">Family cards</h1>
-      <p className="max-w-2xl text-muted">Invite each family personally. Their link opens your invite with <b>“Specially for {list[0]?.name ?? 'The Sharma Parivar'}”</b> at the top, and you get a card with their name on it to send on WhatsApp.</p>
+      <p className="max-w-2xl text-muted">Invite each family personally. Their link opens your invite addressed to them by name (“Respected Sharma Parivar”, in your invite’s language), and you get a card with their name on it to send on WhatsApp.</p>
 
-      {!inv.published && (
-        <p className="mt-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" /> Your invite is still a draft. You can add families and preview cards now; publish it before sending, so the links open for them.
-        </p>
-      )}
-
+      {!inv.published ? (
+        <div className="card mt-6 max-w-xl p-6">
+          <p className="flex items-start gap-2 font-semibold text-ink"><AlertTriangle className="mt-0.5 h-5 w-5 flex-none text-amber-600" /> Publish your invite first</p>
+          <p className="mt-1 text-sm text-muted">Each family’s card and link open your live invite, so family cards become available once it’s published. Your saved families are kept.</p>
+          <PageLink href={`/dashboard/invites/${id}`} className="btn btn-primary btn-sm mt-4"><ArrowLeft className="h-4 w-4" /> Back to the editor to publish</PageLink>
+        </div>
+      ) : (
       <div className="mt-6 grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
         <section className="card h-fit p-5" aria-labelledby="add-title">
           <h2 id="add-title" className="font-display text-2xl font-semibold text-maroon-900">Add families</h2>
@@ -151,6 +152,8 @@ export function FamilyCards({ id }: { id: string }) {
           )}
         </section>
       </div>
+
+      )}
 
       {card && <FamilyCardDialog invite={inv} family={card.name} link={linkFor(card.name)} onClose={() => setCard(null)} onSent={() => markSent(card)} />}
     </div>

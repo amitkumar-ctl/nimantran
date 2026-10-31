@@ -8,9 +8,11 @@ import type { Colors } from './templates/types';
  * the site already has.
  */
 
-export type CardFonts = { script: string; display: string; body: string; blessing: string };
+export type CardFonts = { script: string; display: string; body: string; blessing: string; /** the invite language's script */ lang: string };
 export type CardInput = {
   family: string; partner1: string; partner2: string; blessing: string;
+  /** Respectful address and invitation line, in the invite's language. */
+  salutation: string; invited: string; english: boolean;
   dateLabel: string; place: string; link: string; replies: boolean;
   colors: Colors; nameStyle: 'script' | 'serif'; fonts: CardFonts;
 };
@@ -45,6 +47,7 @@ export async function drawFamilyCard(c: CardInput): Promise<HTMLCanvasElement> {
     document.fonts.load(`italic 36px ${f.display}`, 'Aa'),
     document.fonts.load(`26px ${f.body}`, 'Aa'),
     c.blessing ? document.fonts.load(`46px ${f.blessing}`, c.blessing) : Promise.resolve([]),
+    document.fonts.load(`34px ${f.lang}`, `${c.salutation}${c.invited}`),
   ]).catch(() => {});
 
   const canvas = document.createElement('canvas');
@@ -69,10 +72,15 @@ export async function drawFamilyCard(c: CardInput): Promise<HTMLCanvasElement> {
 
   if (c.blessing) { fitSize(g, c.blessing, (px) => `${px}px ${f.blessing}`, 46, inner); text(c.blessing, 150, k.accent); }
 
-  g.font = `600 24px ${f.body}`;
-  if ('letterSpacing' in g) (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '6px';
-  text('SPECIALLY FOR', 238, withAlpha(k.heroText, 0.8));
-  if ('letterSpacing' in g) (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '0px';
+  // "Respected" / "आदरणीय" above the family's name, in the invite's language.
+  if (c.english) {
+    g.font = `600 24px ${f.body}`;
+    if ('letterSpacing' in g) (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '6px';
+    text(c.salutation.toUpperCase(), 238, withAlpha(k.heroText, 0.8));
+    if ('letterSpacing' in g) (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '0px';
+  } else {
+    fitSize(g, c.salutation, (px) => `${px}px ${f.lang}`, 34, inner); text(c.salutation, 240, withAlpha(k.heroText, 0.9));
+  }
   fitSize(g, c.family, (px) => `${px}px ${f.script}`, 100, inner);
   text(c.family, 335, k.accent);
 
@@ -81,8 +89,10 @@ export async function drawFamilyCard(c: CardInput): Promise<HTMLCanvasElement> {
   g.beginPath(); g.moveTo(W / 2 - 170, 392); g.lineTo(W / 2 - 22, 392); g.moveTo(W / 2 + 22, 392); g.lineTo(W / 2 + 170, 392); g.stroke();
   g.fillStyle = k.accent; diamond(g, W / 2, 392, 10);
 
-  g.font = `italic 36px ${f.display}`;
-  text('you are warmly invited to the wedding of', 470, k.heroText);
+  // "You and your family are cordially invited (to the wedding of)" in the invite's language.
+  const line = c.english ? `${c.invited} to the wedding of` : c.invited;
+  fitSize(g, line, (px) => (c.english ? `italic ${px}px ${f.display}` : `${px}px ${f.lang}`), 36, inner);
+  text(line, 470, k.heroText);
 
   if (c.nameStyle === 'script') {
     fitSize(g, c.partner1, (px) => `${px}px ${f.script}`, 120, inner); text(c.partner1, 610, k.accent);

@@ -148,7 +148,8 @@ function EditorTopBar({ draft, dirty, saving, onSave, saveError }: {
         <div className="flex flex-wrap items-center gap-2">
           <TourButton id="editor"><Compass className="h-4 w-4" /> <span className="hidden sm:inline">Tour</span></TourButton>
           <PageLink data-tour="ed-guests" href={`/dashboard/invites/${draft.id}/guests`} className="btn btn-ghost btn-sm"><Users className="h-4 w-4" /> Guests</PageLink>
-          <PageLink data-tour="ed-cards" href={`/dashboard/invites/${draft.id}/cards`} className="btn btn-ghost btn-sm"><IdCard className="h-4 w-4" /> Family cards</PageLink>
+          {/* Cards carry the invite's link, so they come after publishing. */}
+          {draft.published && <PageLink data-tour="ed-cards" href={`/dashboard/invites/${draft.id}/cards`} className="btn btn-ghost btn-sm"><IdCard className="h-4 w-4" /> Family cards</PageLink>}
           {draft.published && (
             <span data-tour="ed-share" className="flex flex-wrap gap-2">
               <button type="button" className="btn btn-outline btn-sm" onClick={copy}>{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} {copied ? 'Copied' : 'Copy link'}</button>

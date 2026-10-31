@@ -20,24 +20,28 @@ export type Language = {
   events?: string;
   /** A short welcome line under the RSVP heading. */
   welcome?: string;
+  /** Respectful form of address before a family's name ("आदरणीय", "Respected"…). */
+  salutation: string;
+  /** "You and your family are cordially invited", for personal invites. */
+  invited: string;
   /** Words people search for. */
   words: string[];
 };
 
 export const LANGUAGES: Language[] = [
-  { code: 'en', name: 'English', native: 'English', words: ['english'] },
-  { code: 'hi', name: 'Hindi', native: 'हिन्दी', events: 'मांगलिक कार्यक्रम', welcome: 'आपकी उपस्थिति प्रार्थनीय है', words: ['hindi', 'devanagari'] },
-  { code: 'mr', name: 'Marathi', native: 'मराठी', events: 'कार्यक्रम', welcome: 'आपली उपस्थिती प्रार्थनीय आहे', words: ['marathi', 'maharashtrian'] },
-  { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી', events: 'શુભ પ્રસંગો', welcome: 'આપ સૌને ભાવભર્યું આમંત્રણ', words: ['gujarati'] },
-  { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ', events: 'ਸਮਾਗਮ', welcome: 'ਜੀ ਆਇਆਂ ਨੂੰ', words: ['punjabi', 'gurmukhi', 'sikh'] },
-  { code: 'bn', name: 'Bengali', native: 'বাংলা', events: 'অনুষ্ঠান', welcome: 'আপনার উপস্থিতি একান্ত কাম্য', words: ['bengali', 'bangla'] },
-  { code: 'as', name: 'Assamese', native: 'অসমীয়া', events: 'অনুষ্ঠানসূচী', welcome: 'সাদৰ নিমন্ত্ৰণ', words: ['assamese', 'axomiya'] },
-  { code: 'or', name: 'Odia', native: 'ଓଡ଼ିଆ', events: 'କାର୍ଯ୍ୟକ୍ରମ', welcome: 'ସାଦର ନିମନ୍ତ୍ରଣ', words: ['odia', 'oriya'] },
-  { code: 'ta', name: 'Tamil', native: 'தமிழ்', events: 'நிகழ்ச்சிகள்', welcome: 'அனைவரும் வருக', words: ['tamil'] },
-  { code: 'te', name: 'Telugu', native: 'తెలుగు', events: 'కార్యక్రమాలు', welcome: 'అందరికీ ఆహ్వానం', words: ['telugu'] },
-  { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ', events: 'ಕಾರ್ಯಕ್ರಮಗಳು', welcome: 'ಆತ್ಮೀಯ ಸ್ವಾಗತ', words: ['kannada'] },
-  { code: 'ml', name: 'Malayalam', native: 'മലയാളം', events: 'ചടങ്ങുകൾ', welcome: 'ഏവർക്കും സ്വാഗതം', words: ['malayalam', 'malayali', 'kerala'] },
-  { code: 'ur', name: 'Urdu', native: 'اردو', events: 'تقریبات', welcome: 'آپ کی شرکت باعثِ مسرت ہوگی', words: ['urdu'] },
+  { code: 'en', name: 'English', native: 'English', salutation: 'Respected', invited: 'You and your family are cordially invited', words: ['english'] },
+  { code: 'hi', name: 'Hindi', native: 'हिन्दी', events: 'मांगलिक कार्यक्रम', welcome: 'आपकी उपस्थिति प्रार्थनीय है', salutation: 'आदरणीय', invited: 'आप सपरिवार सादर आमंत्रित हैं', words: ['hindi', 'devanagari'] },
+  { code: 'mr', name: 'Marathi', native: 'मराठी', events: 'कार्यक्रम', welcome: 'आपली उपस्थिती प्रार्थनीय आहे', salutation: 'आदरणीय', invited: 'सहकुटुंब सहपरिवार आग्रहाचे निमंत्रण', words: ['marathi', 'maharashtrian'] },
+  { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી', events: 'શુભ પ્રસંગો', welcome: 'આપ સૌને ભાવભર્યું આમંત્રણ', salutation: 'આદરણીય', invited: 'આપ સૌને સહકુટુંબ ભાવભર્યું આમંત્રણ', words: ['gujarati'] },
+  { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ', events: 'ਸਮਾਗਮ', welcome: 'ਜੀ ਆਇਆਂ ਨੂੰ', salutation: 'ਸਤਿਕਾਰਯੋਗ', invited: 'ਆਪ ਜੀ ਨੂੰ ਪਰਿਵਾਰ ਸਮੇਤ ਸਨਿਮਰ ਸੱਦਾ', words: ['punjabi', 'gurmukhi', 'sikh'] },
+  { code: 'bn', name: 'Bengali', native: 'বাংলা', events: 'অনুষ্ঠান', welcome: 'আপনার উপস্থিতি একান্ত কাম্য', salutation: 'শ্রদ্ধেয়', invited: 'সপরিবারে আপনাদের সাদর আমন্ত্রণ', words: ['bengali', 'bangla'] },
+  { code: 'as', name: 'Assamese', native: 'অসমীয়া', events: 'অনুষ্ঠানসূচী', welcome: 'সাদৰ নিমন্ত্ৰণ', salutation: 'শ্ৰদ্ধাৰ', invited: 'সপৰিয়ালে সাদৰ নিমন্ত্ৰণ', words: ['assamese', 'axomiya'] },
+  { code: 'or', name: 'Odia', native: 'ଓଡ଼ିଆ', events: 'କାର୍ଯ୍ୟକ୍ରମ', welcome: 'ସାଦର ନିମନ୍ତ୍ରଣ', salutation: 'ଶ୍ରଦ୍ଧେୟ', invited: 'ସପରିବାର ସାଦର ନିମନ୍ତ୍ରଣ', words: ['odia', 'oriya'] },
+  { code: 'ta', name: 'Tamil', native: 'தமிழ்', events: 'நிகழ்ச்சிகள்', welcome: 'அனைவரும் வருக', salutation: 'மதிப்பிற்குரிய', invited: 'தங்களை குடும்பத்துடன் அன்புடன் அழைக்கிறோம்', words: ['tamil'] },
+  { code: 'te', name: 'Telugu', native: 'తెలుగు', events: 'కార్యక్రమాలు', welcome: 'అందరికీ ఆహ్వానం', salutation: 'గౌరవనీయులైన', invited: 'సకుటుంబ సపరివార సమేతంగా ఆహ్వానిస్తున్నాము', words: ['telugu'] },
+  { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ', events: 'ಕಾರ್ಯಕ್ರಮಗಳು', welcome: 'ಆತ್ಮೀಯ ಸ್ವಾಗತ', salutation: 'ಗೌರವಾನ್ವಿತ', invited: 'ತಮಗೆ ಸಕುಟುಂಬ ಸಮೇತ ಆದರದ ಆಹ್ವಾನ', words: ['kannada'] },
+  { code: 'ml', name: 'Malayalam', native: 'മലയാളം', events: 'ചടങ്ങുകൾ', welcome: 'ഏവർക്കും സ്വാഗതം', salutation: 'ബഹുമാനപ്പെട്ട', invited: 'കുടുംബസമേതം സ്നേഹപൂർവ്വം ക്ഷണിക്കുന്നു', words: ['malayalam', 'malayali', 'kerala'] },
+  { code: 'ur', name: 'Urdu', native: 'اردو', events: 'تقریبات', welcome: 'آپ کی شرکت باعثِ مسرت ہوگی', salutation: 'محترم', invited: 'آپ کو مع اہل و عیال شرکت کی دعوت ہے', words: ['urdu'] },
 ];
 
 const BY_CODE = new Map(LANGUAGES.map((l) => [l.code, l]));
@@ -173,4 +177,24 @@ export function scriptProps(text: string, langHint?: string) {
   if (s === 'latin') return { script: s, className: '', lang: undefined as string | undefined, dir: undefined as 'rtl' | undefined };
   const lang = s === 'beng' && langHint === 'as' ? 'as' : s === 'deva' && langHint === 'mr' ? 'mr' : SCRIPT_LANG[s];
   return { script: s, className: SCRIPT_FONT[s], lang, dir: s === 'arab' || s === 'urdu' ? ('rtl' as const) : undefined };
+}
+
+const SCRIPT_TO_LANG: Partial<Record<Script, LangCode>> = {
+  deva: 'hi', beng: 'bn', guru: 'pa', gujr: 'gu', orya: 'or', taml: 'ta', telu: 'te', knda: 'kn', mlym: 'ml', arab: 'ur', urdu: 'ur',
+};
+
+/**
+ * The language an invite is written in: whatever script the couple's top line
+ * (blessing) uses, falling back to the design's language. A Hindi design
+ * whose couple wrote an English top line greets families in English.
+ */
+export function inviteLanguage(blessing: string, designLang: string): LangCode {
+  const text = blessing.trim();
+  if (!text) return getLanguage(designLang).code;
+  const s = scriptOf(text);
+  if (s === 'latin') return 'en';
+  const design = getLanguage(designLang).code;
+  // Same script as the design (Marathi/Hindi, Assamese/Bengali): keep the design's language.
+  if (design !== 'en' && scriptOf(getLanguage(design).native) === s) return design;
+  return SCRIPT_TO_LANG[s] ?? design;
 }

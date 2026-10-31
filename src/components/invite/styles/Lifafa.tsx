@@ -1,7 +1,8 @@
 import { formatLongDate, formatShortDate, mapsSearchUrl } from '@/lib/format';
 import { Countdown } from '../Countdown';
 import { initialsOf } from '../Ornaments';
-import { GuestName } from './GuestName';
+import { EnvelopeAddress } from './GuestName';
+import { inviteLanguage } from '@/lib/templates/languages';
 import { colorsOf, EventActions, fit, NativeLine, nameTier, SaveAll, ScriptText, SVG_FONT, SvgScript, SwatchSvg, type StyleProps, type StyleView, type SwatchProps } from './common';
 
 /*
@@ -77,8 +78,8 @@ function Hero({ invite, design, framed, H1 }: StyleProps) {
 
       {/* The sealed envelope, on top until opened */}
       <label htmlFor={id} className="lf-cover absolute inset-0 z-20 flex cursor-pointer flex-col items-center justify-center px-6 text-center" style={bg}>
-        <span className="font-italiana text-sm tracking-[0.3em] opacity-70">WITH LOVE, FOR</span>
-        <GuestName fallback="You & your family" className="mt-2 mb-12 block max-w-full font-script text-[38px] leading-tight text-inv-accent sm:text-[46px]" />
+        <EnvelopeAddress lang={inviteLanguage(invite.blessing, design.lang)} kickerClass="font-italiana text-sm tracking-[0.3em] opacity-70"
+          nameClass="mt-2 mb-12 block max-w-full font-script text-[38px] leading-tight text-inv-accent sm:text-[46px]" />
         <Envelope initials={initialsOf(invite.partner1, invite.partner2)} deep={c.deep} seal={c.alt} />
         <span className="mt-12 font-italiana text-lg tracking-[0.26em] text-inv-accent">TAP TO OPEN</span>
         <span className="mt-3 font-marcellus text-sm opacity-75">{invite.partner1} &amp; {invite.partner2} have an invitation for you</span>

@@ -4,14 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import { Download, Loader2, Share2, X } from 'lucide-react';
 import type { InviteData } from '@/lib/types';
 import { getTemplate } from '@/lib/themes';
-import { scriptProps } from '@/lib/templates/languages';
+import { getLanguage, inviteLanguage, scriptProps } from '@/lib/templates/languages';
 import { formatLongDate } from '@/lib/format';
 import { cardFileName, drawFamilyCard } from '@/lib/family-card';
 
 /** The message sent with a family's card or link. */
 export function familyMessage(invite: InviteData, family: string, link: string) {
   const when = formatLongDate(invite.weddingDate);
-  return `Dear ${family},\nWith joy, we invite you and your family to the wedding of ${invite.partner1} & ${invite.partner2} on ${when}${invite.city ? ` in ${invite.city}` : ''}.\n${invite.rsvpEnabled !== false ? 'See all the functions and let us know if you can come' : 'See all the functions and venues'}:\n${link}`;
+  const sal = getLanguage(inviteLanguage(invite.blessing, getTemplate(invite.theme).lang)).salutation;
+  return `${sal} ${family},\nWith joy, we invite you and your family to the wedding of ${invite.partner1} & ${invite.partner2} on ${when}${invite.city ? ` in ${invite.city}` : ''}.\n${invite.rsvpEnabled !== false ? 'See all the functions and let us know if you can come' : 'See all the functions and venues'}:\n${link}`;
 }
 
 /** wa.me link: to a number if we have one (10 digits = India), otherwise WhatsApp's contact picker. */
@@ -30,6 +31,8 @@ export function FamilyCardDialog({ invite, family, link, onClose, onSent }: {
   const [error, setError] = useState('');
   const design = getTemplate(invite.theme);
   const blessingFont = scriptProps(invite.blessing).className || 'font-display';
+  const language = getLanguage(inviteLanguage(invite.blessing, design.lang));
+  const langFont = scriptProps(language.salutation, language.code).className || 'font-display';
   const canShareFiles = typeof navigator !== 'undefined' && 'canShare' in navigator;
 
   useEffect(() => {
@@ -38,15 +41,16 @@ export function FamilyCardDialog({ invite, family, link, onClose, onSent }: {
     const font = (k: string, fallback: string) => (fontRefs.current[k] ? getComputedStyle(fontRefs.current[k]!).fontFamily : fallback);
     drawFamilyCard({
       family, partner1: invite.partner1, partner2: invite.partner2, blessing: invite.blessing,
+      salutation: language.salutation, invited: language.invited, english: language.code === 'en',
       dateLabel: formatLongDate(invite.weddingDate), place: invite.venue || invite.city, link, replies: invite.rsvpEnabled !== false,
       colors: design.colors, nameStyle: design.nameStyle,
-      fonts: { script: font('script', 'cursive'), display: font('display', 'serif'), body: font('body', 'sans-serif'), blessing: font('blessing', 'serif') },
+      fonts: { script: font('script', 'cursive'), display: font('display', 'serif'), body: font('body', 'sans-serif'), blessing: font('blessing', 'serif'), lang: font('lang', 'serif') },
     })
       .then((canvas) => new Promise<Blob>((res, rej) => canvas.toBlob((b) => (b ? res(b) : rej(new Error('Could not make the card'))), 'image/jpeg', 0.92)))
       .then((blob) => { if (alive) { made = URL.createObjectURL(blob); setPng({ url: made, blob }); } })
       .catch((e) => alive && setError((e as Error).message));
     return () => { alive = false; if (made) URL.revokeObjectURL(made); };
-  }, [family, invite, link, design.colors, design.nameStyle]);
+  }, [family, invite, link, design.colors, design.nameStyle, language]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -94,6 +98,7 @@ export function FamilyCardDialog({ invite, family, link, onClose, onSent }: {
           <span ref={(el) => { fontRefs.current.display = el; }} className="font-display">a</span>
           <span ref={(el) => { fontRefs.current.body = el; }} className="font-sans">a</span>
           <span ref={(el) => { fontRefs.current.blessing = el; }} className={blessingFont}>a</span>
+          <span ref={(el) => { fontRefs.current.lang = el; }} className={langFont}>a</span>
         </span>
       </div>
     </div>
