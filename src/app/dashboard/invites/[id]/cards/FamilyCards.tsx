@@ -8,6 +8,9 @@ import { PageLink } from '@/components/ui/PageLink';
 import { FamilyCardDialog, familyMessage, whatsappUrl } from '@/components/invite/FamilyCardDialog';
 import type { PersonalEntry } from '@/lib/validation';
 import type { PersonalInviteData } from '@/lib/types';
+import { sharePath } from '@/lib/links';
+import { ApiError } from '@/lib/api-client';
+import { PremiumOffer, usePlan } from '@/components/premium/Upgrade';
 
 const noSubscribe = () => () => {};
 const useOrigin = () => useSyncExternalStore(noSubscribe, () => window.location.origin, () => '');
@@ -27,6 +30,7 @@ export function FamilyCards({ id }: { id: string }) {
   const qc = useQueryClient();
   const origin = useOrigin();
   const invite = useQuery({ queryKey: queryKeys.invite(id), queryFn: () => api.getInvite(id) });
+  const plan = usePlan();
   const families = useQuery({ queryKey: queryKeys.personal(id), queryFn: () => api.listPersonal(id) });
   const [text, setText] = useState('');
   const [note, setNote] = useState('');
@@ -55,7 +59,11 @@ export function FamilyCards({ id }: { id: string }) {
 
   const inv = invite.data;
   if (!inv) return <div className="container-page py-10"><div className="card h-96 animate-pulse" /></div>;
-  const base = `${origin}/i/${inv.slug}`;
+  const base = `${origin}${sharePath(inv)}`;
+  // Free invites get a few cards while payments are on; Premium is unlimited.
+  const limit = plan?.enabled && !inv.premium ? plan.freeFamilyCards : Infinity;
+  const left = Math.max(0, limit - list.length);
+  const needsPremium = add.isError && add.error instanceof ApiError && add.error.status === 402;
   const linkFor = (name: string) => `${base}?to=${encodeURIComponent(name)}`;
   const markSent = (f: PersonalInviteData) => !f.sent && update.mutate({ pid: f.id, data: { sent: true } });
   const entries = parseFamilies(text);
@@ -86,9 +94,17 @@ export function FamilyCards({ id }: { id: string }) {
             placeholder={'Sharma Parivar\nVerma family, 98765 43210\nMr. & Mrs. Iyer'} />
           {add.isError && <p className="mt-2 text-sm text-red-700" role="alert">{add.error.message}</p>}
           {note && <p className="mt-2 text-sm text-green-700" role="status">{note}</p>}
-          <button type="button" className="btn btn-primary mt-3 w-full" disabled={!entries.length || add.isPending} onClick={() => add.mutate(entries)}>
+          <button type="button" className="btn btn-primary mt-3 w-full" disabled={!entries.length || add.isPending || left === 0} onClick={() => add.mutate(entries)}>
             {add.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add {entries.length > 1 ? `${entries.length} families` : 'family'}
           </button>
+          {limit !== Infinity && (
+            <p className="mt-2 text-center text-xs text-muted">{list.length} of {limit} free family cards used</p>
+          )}
+          {limit !== Infinity && (left === 0 || needsPremium) && (
+            <div className="mt-4">
+              <PremiumOffer inviteId={id} compact reason={left === 0 ? `You’ve used all ${limit} free family cards. Premium lets you send one to every family.` : 'Premium lets you send a card to every family.'} />
+            </div>
+          )}
         </section>
 
         <section aria-labelledby="list-title">

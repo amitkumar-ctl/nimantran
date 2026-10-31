@@ -99,6 +99,8 @@ export function sampleInvite(theme: Theme = 'royal'): InviteData {
     id: 'sample',
     slug: `${s.partner1}-weds-${s.partner2}`.toLowerCase(),
     published: true,
+    premium: false,
+    customSlug: '',
     theme: t.id,
     partner1: s.partner1,
     partner2: s.partner2,

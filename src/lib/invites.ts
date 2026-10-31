@@ -33,6 +33,8 @@ export function toInviteData(doc: InviteLike): InviteData {
     upiId: d.upiId ?? '',
     upiName: d.upiName ?? '',
     rsvpEnabled: d.rsvpEnabled !== false,
+    premium: d.premium === true,
+    customSlug: d.customSlug ?? '',
     updatedAt: (doc.updatedAt ?? new Date()).toISOString(),
   };
 }
@@ -48,8 +50,13 @@ export async function getPublicInvite(slug: string): Promise<InviteData | null> 
 
   if (!/^[a-z0-9-]{3,80}$/.test(slug)) return null;
   await connectDB();
-  const doc = await Invite.findOne({ slug, published: true }).lean();
-  return doc ? toInviteData(doc as unknown as InviteLike) : null;
+  // Either the permanent link or the Premium short name.
+  const doc = await Invite.findOne({ $or: [{ slug }, { customSlug: slug }], published: true }).lean();
+  if (!doc) return null;
+  // Tagged with both names, so an edit (which revalidates the permanent slug) refreshes this copy too.
+  cacheTag(inviteTag(doc.slug));
+  if (doc.customSlug) cacheTag(inviteTag(doc.customSlug));
+  return toInviteData(doc as unknown as InviteLike);
 }
 
 const slugify = (s: string) =>

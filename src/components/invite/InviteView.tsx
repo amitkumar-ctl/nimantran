@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { sharePath } from '@/lib/links';
 import { MapPin } from 'lucide-react';
 import type { InviteData } from '@/lib/types';
 import { formatHeroDate, formatLongDate, formatShortDate, mapsSearchUrl } from '@/lib/format';
@@ -30,7 +31,7 @@ type Props = {
  */
 export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Props) {
   const hero = framed ? 'min-h-[640px]' : 'min-h-dvh';
-  const link = absoluteUrl(`/i/${invite.slug}`);
+  const link = absoluteUrl(sharePath(invite));
   // Previews (editor, marketing mock-ups) use neutral tags so the host page
   // keeps a single <h1> and a clean heading outline for SEO.
   const H1 = framed ? 'p' : 'h1';

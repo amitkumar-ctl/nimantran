@@ -1,5 +1,10 @@
 import type { InviteData, InviteSummary, PersonalInviteData, RsvpData, SessionUser, ShagunData } from './types';
 import type { InviteContent, PersonalEntry, Theme } from './validation';
+import type { PlanInfo } from './payments/plan';
+
+/** Razorpay order details for Checkout (from POST /api/invites/:id/upgrade). */
+export type UpgradeOrder = { keyId: string; orderId: string; amount: number; currency: string; name: string; description: string; prefill: { name: string; email: string } };
+export type CheckoutSuccess = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
 
 // Typed browser-side API calls + TanStack Query keys, in one place.
 
@@ -35,6 +40,7 @@ export const queryKeys = {
   rsvps: (id: string) => ['invites', id, 'rsvps'] as const,
   shagun: (id: string) => ['invites', id, 'shagun'] as const,
   personal: (id: string) => ['invites', id, 'personal'] as const,
+  plan: ['plan'] as const,
 };
 
 export const api = {
@@ -70,6 +76,12 @@ export const api = {
   updatePersonal: (id: string, pid: string, data: { name?: string; phone?: string; sent?: boolean }) =>
     request<{ family: PersonalInviteData }>(`/api/invites/${id}/personal/${pid}`, { method: 'PATCH', body: JSON.stringify(data) }).then((r) => r.family),
   deletePersonal: (id: string, pid: string) => request<{ ok: true }>(`/api/invites/${id}/personal/${pid}`, { method: 'DELETE' }),
+  plan: () => request<PlanInfo>('/api/payments/plan'),
+  upgrade: (id: string) => request<UpgradeOrder>(`/api/invites/${id}/upgrade`, { method: 'POST' }),
+  verifyPayment: (data: CheckoutSuccess) =>
+    request<{ invite: InviteData | null }>('/api/payments/verify', { method: 'POST', body: JSON.stringify(data) }).then((r) => r.invite),
+  setCustomLink: (id: string, customSlug: string) =>
+    request<{ invite: InviteData }>(`/api/invites/${id}/custom-link`, { method: 'PUT', body: JSON.stringify({ customSlug }) }).then((r) => r.invite),
   deleteShagun: (id: string, entryId: string) => request<{ ok: true }>(`/api/invites/${id}/shagun/${entryId}`, { method: 'DELETE' }),
 };
 

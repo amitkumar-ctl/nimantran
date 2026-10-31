@@ -21,6 +21,8 @@ import { getTemplate } from '@/lib/themes';
 import { BLESSING_SUGGESTIONS, DEFAULT_BLESSINGS, getLanguage } from '@/lib/templates/languages';
 import { GuidedTour, TourButton } from '@/components/tour/GuidedTour';
 import { EDITOR_TOUR } from '@/components/tour/tours';
+import { LinkSection } from '@/components/premium/LinkSection';
+import { sharePath } from '@/lib/links';
 
 /** Just the editable fields (drops id, slug, published, updatedAt). */
 const contentOf = (d: InviteData) =>
@@ -123,7 +125,7 @@ function EditorTopBar({ draft, dirty, saving, onSave, saveError }: {
 }) {
   const [copied, setCopied] = useState(false);
   const origin = useOrigin();
-  const link = `${origin}/i/${draft.slug}`;
+  const link = `${origin}${sharePath(draft)}`;
   const whatsapp = `https://wa.me/?text=${encodeURIComponent(`You're invited to the wedding of ${draft.partner1} & ${draft.partner2} 💍\n${link}`)}`;
 
   const copy = async () => {
@@ -321,6 +323,8 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
           UPI IDs, but work with a free business UPI ID (Google Pay for Business, PhonePe Business, Paytm for Business).
         </p>
       </Section>
+
+      <LinkSection invite={draft} />
 
       <section data-tour="ed-delete" className="rounded-2xl border border-red-100 bg-white/60 p-5 sm:p-6">
         <h2 className="font-display text-xl font-semibold text-maroon-900">Delete invite</h2>

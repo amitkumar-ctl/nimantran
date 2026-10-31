@@ -74,6 +74,7 @@ export default function PrivacyPage() {
         <li><b>Vercel</b>: website hosting and aggregated analytics.</li>
         <li><b>MongoDB Atlas</b>: database hosting.</li>
         <li><b>Resend</b>: sending emails, such as replies to messages you send us.</li>
+        <li><b>Razorpay</b>: processing Premium payments. Razorpay collects your payment details directly; we receive only the payment reference, amount, status and method (for example “UPI”), never card numbers, UPI PINs or bank logins.</li>
         <li><b>Google</b>: only if you choose “Sign in with Google”.</li>
       </ul>
       <p>These providers may store data on servers outside India. We may also disclose information if required by law or a valid order from a government authority, or to protect the safety of our users or the public. If {site.name} is ever merged or sold, your information would move to the new owner under this same policy, and we would tell you first.</p>
