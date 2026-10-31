@@ -32,6 +32,7 @@ export function toInviteData(doc: InviteLike): InviteData {
     rsvpDeadline: d.rsvpDeadline ?? '',
     upiId: d.upiId ?? '',
     upiName: d.upiName ?? '',
+    rsvpEnabled: d.rsvpEnabled !== false,
     updatedAt: (doc.updatedAt ?? new Date()).toISOString(),
   };
 }

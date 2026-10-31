@@ -1,5 +1,5 @@
-import type { InviteData, InviteSummary, RsvpData, SessionUser, ShagunData } from './types';
-import type { InviteContent, Theme } from './validation';
+import type { InviteData, InviteSummary, PersonalInviteData, RsvpData, SessionUser, ShagunData } from './types';
+import type { InviteContent, PersonalEntry, Theme } from './validation';
 
 // Typed browser-side API calls + TanStack Query keys, in one place.
 
@@ -34,6 +34,7 @@ export const queryKeys = {
   invite: (id: string) => ['invites', id] as const,
   rsvps: (id: string) => ['invites', id, 'rsvps'] as const,
   shagun: (id: string) => ['invites', id, 'shagun'] as const,
+  personal: (id: string) => ['invites', id, 'personal'] as const,
 };
 
 export const api = {
@@ -59,6 +60,12 @@ export const api = {
     request<{ entry: ShagunData }>(`/api/invites/${id}/shagun`, { method: 'POST', body: JSON.stringify(data) }).then((r) => r.entry),
   updateShagun: (id: string, entryId: string, data: Partial<ShagunInput> & { confirmed?: boolean }) =>
     request<{ entry: ShagunData }>(`/api/invites/${id}/shagun/${entryId}`, { method: 'PATCH', body: JSON.stringify(data) }).then((r) => r.entry),
+  listPersonal: (id: string) => request<{ families: PersonalInviteData[] }>(`/api/invites/${id}/personal`).then((r) => r.families),
+  addPersonal: (id: string, entries: PersonalEntry[]) =>
+    request<{ added: PersonalInviteData[]; skipped: number }>(`/api/invites/${id}/personal`, { method: 'POST', body: JSON.stringify({ entries }) }),
+  updatePersonal: (id: string, pid: string, data: { name?: string; phone?: string; sent?: boolean }) =>
+    request<{ family: PersonalInviteData }>(`/api/invites/${id}/personal/${pid}`, { method: 'PATCH', body: JSON.stringify(data) }).then((r) => r.family),
+  deletePersonal: (id: string, pid: string) => request<{ ok: true }>(`/api/invites/${id}/personal/${pid}`, { method: 'DELETE' }),
   deleteShagun: (id: string, entryId: string) => request<{ ok: true }>(`/api/invites/${id}/shagun/${entryId}`, { method: 'DELETE' }),
 };
 

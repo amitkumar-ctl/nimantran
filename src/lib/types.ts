@@ -9,7 +9,7 @@ export type InviteData = InviteContent & {
   updatedAt: string;
 };
 
-export type InviteSummary = Pick<InviteData, 'id' | 'slug' | 'published' | 'partner1' | 'partner2' | 'weddingDate' | 'theme' | 'updatedAt'> & {
+export type InviteSummary = Pick<InviteData, 'id' | 'slug' | 'published' | 'partner1' | 'partner2' | 'weddingDate' | 'theme' | 'updatedAt' | 'rsvpEnabled'> & {
   rsvpCount: number;
 };
 
@@ -24,6 +24,9 @@ export type RsvpData = {
   message: string;
   createdAt: string;
 };
+
+/** A family invited personally (their link and card carry their name). */
+export type PersonalInviteData = { id: string; name: string; phone: string; sent: boolean; createdAt: string };
 
 export type SessionUser = { id: string; name: string; email: string; avatarUrl?: string };
 

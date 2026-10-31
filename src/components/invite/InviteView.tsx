@@ -9,6 +9,7 @@ import { Divider } from './Mandala';
 import { Crest, HeroFrame, initialsOf, nameClass } from './Ornaments';
 import { getTemplate, themeVars } from '@/lib/themes';
 import { STYLE_VIEWS } from './styles';
+import { ForFamily } from './ForFamily';
 import { NativeLine, ScriptText } from './styles/common';
 
 const EVENT_TINTS = ['#fdf1c7', '#e3f2df', '#f6e1ec', '#f9dede', '#e4e6f7', '#e6f3f7', '#f3eadf'];
@@ -36,6 +37,9 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
   const H3 = framed ? 'p' : 'h3';
   const design = getTemplate(invite.theme);
   const theme = design.id;
+  // Replies can be switched off (an invitation card only); shagun shows when a UPI ID is set.
+  const replies = invite.rsvpEnabled !== false ? rsvpSlot : null;
+  const shagun = invite.upiId ? shagunSlot : null;
 
   // Styled looks (palace, envelope, temple…) draw their own hero and functions.
   if (design.layout !== 'classic') {
@@ -43,17 +47,19 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
     const props = { invite, design, framed, link, H1, H2, H3 } as const;
     return (
       <div style={themeVars(theme)} className="bg-inv-surface text-ink">
+        {/* The envelope look addresses the family on the envelope itself. */}
+        {design.layout !== 'lifafa' && <ForFamily />}
         <view.Hero {...props} />
         {invite.events.length > 0 && <view.Events {...props} />}
-        {(rsvpSlot || shagunSlot) && (
+        {(replies || shagun) && (
           <section id="rsvp" className={view.rsvp.section} style={view.rsvp.style}>
             <div className="mx-auto max-w-md">
-              <H2 className={`text-center ${view.rsvp.titleClass}`}>{view.rsvp.title}</H2>
+              <H2 className={`text-center ${view.rsvp.titleClass}`}>{replies ? view.rsvp.title : 'With your blessings'}</H2>
               <NativeLine design={design} kind="welcome" className="mt-1 text-center text-lg text-inv-primary" />
-              {invite.rsvpDeadline && <p className={`mt-1 mb-6 text-center ${view.rsvp.subClass}`}>Kindly RSVP by {formatLongDate(invite.rsvpDeadline)}</p>}
-              {!invite.rsvpDeadline && <div className="mb-6" />}
-              {rsvpSlot}
-              {shagunSlot}
+              {replies && invite.rsvpDeadline && <p className={`mt-1 mb-6 text-center ${view.rsvp.subClass}`}>Please reply by {formatLongDate(invite.rsvpDeadline)}</p>}
+              {!(replies && invite.rsvpDeadline) && <div className="mb-6" />}
+              {replies}
+              {shagun}
             </div>
           </section>
         )}
@@ -71,6 +77,7 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
     : framed ? ['text-[54px]', 'text-[46px]', 'text-[38px]', 'text-[32px]'] : ['text-[54px] sm:text-[84px]', 'text-[46px] sm:text-[76px]', 'text-[38px] sm:text-[64px]', 'text-[32px] sm:text-[54px]'])[tier];
   return (
     <div style={themeVars(theme)} className="bg-inv-surface text-ink">
+      <ForFamily />
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <header
         className={`relative flex ${hero} flex-col items-center justify-center overflow-hidden ${framed ? 'px-12' : 'px-10 sm:px-16'} text-center text-inv-hero-text ${design.frame === 'arch' || design.frame === 'toran' ? 'pt-24 pb-12 sm:pt-28' : 'py-12 sm:py-16'}`}
@@ -158,15 +165,15 @@ export function InviteView({ invite, rsvpSlot, shagunSlot, framed = false }: Pro
       )}
 
       {/* ── RSVP + Shagun ─────────────────────────────────────────────── */}
-      {(rsvpSlot || shagunSlot) && (
+      {(replies || shagun) && (
         <section id="rsvp" className="bg-gradient-to-b from-inv-surface to-cream-2/70 px-5 py-16 sm:py-20">
           <div className="mx-auto max-w-md">
-            <H2 className="text-center font-display text-4xl font-semibold text-inv-heading">Will you join us?</H2>
-            {invite.rsvpDeadline && (
-              <p className="mt-1 mb-6 text-center font-display text-lg italic text-muted">Kindly RSVP by {formatLongDate(invite.rsvpDeadline)}</p>
+            <H2 className="text-center font-display text-4xl font-semibold text-inv-heading">{replies ? 'Will you join us?' : 'With your blessings'}</H2>
+            {replies && invite.rsvpDeadline && (
+              <p className="mt-1 mb-6 text-center font-display text-lg italic text-muted">Please reply by {formatLongDate(invite.rsvpDeadline)}</p>
             )}
-            {rsvpSlot}
-            {shagunSlot}
+            {replies}
+            {shagun}
           </div>
         </section>
       )}

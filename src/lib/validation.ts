@@ -32,6 +32,8 @@ export const inviteContentSchema = z.object({
   rsvpDeadline: z.union([z.literal(''), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)]).default(''),
   upiId: z.union([z.literal(''), z.string().trim().regex(/^[\w.\-]{2,256}@[a-zA-Z]{2,64}$/, 'Enter a valid UPI ID (name@bank)')]).default(''),
   upiName: trimmed(60).default(''),
+  /** Show the reply (RSVP) form. Off = an invitation card only. */
+  rsvpEnabled: z.boolean().default(true),
 });
 
 export const createInviteSchema = inviteContentSchema.pick({ partner1: true, partner2: true, weddingDate: true, theme: true });
@@ -114,3 +116,11 @@ export const contactSchema = z.object({
   startedAt: z.number().int().nonnegative().default(0),
 });
 export type ContactInput = z.infer<typeof contactSchema>;
+
+/* --------------------------- personal invites --------------------------- */
+
+const familyPhone = z.union([z.literal(''), z.string().trim().regex(/^[+\d][\d\s-]{6,18}$/, 'Enter a valid phone number')]).default('');
+export const personalEntrySchema = z.object({ name: trimmed(40).min(2, 'Enter a name'), phone: familyPhone });
+export const personalAddSchema = z.object({ entries: z.array(personalEntrySchema).min(1).max(200) });
+export const personalUpdateSchema = z.object({ name: trimmed(40).min(2, 'Enter a name').optional(), phone: familyPhone.optional(), sent: z.boolean().optional() });
+export type PersonalEntry = z.infer<typeof personalEntrySchema>;

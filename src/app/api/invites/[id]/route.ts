@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { Invite } from '@/lib/models/Invite';
 import { Rsvp } from '@/lib/models/Rsvp';
 import { Shagun } from '@/lib/models/Shagun';
+import { PersonalInvite } from '@/lib/models/PersonalInvite';
 import { error, json, parseBody, requireUser, sentKeysOnly, validId } from '@/lib/api-helpers';
 import { inviteTag, toInviteData } from '@/lib/invites';
 import { updateInviteSchema } from '@/lib/validation';
@@ -50,6 +51,7 @@ export async function DELETE(_req: Request, ctx: Ctx) {
 
   await Rsvp.deleteMany({ invite: invite._id });
   await Shagun.deleteMany({ invite: invite._id });
+  await PersonalInvite.deleteMany({ invite: invite._id });
   await invite.deleteOne();
   revalidateTag(inviteTag(invite.slug), { expire: 0 });
   return json({ ok: true });

@@ -33,6 +33,7 @@ const inviteSchema = new Schema(
     rsvpDeadline: { type: String, default: '' },
     upiId: { type: String, default: '' },
     upiName: { type: String, default: '' },
+    rsvpEnabled: { type: Boolean, default: true },
   },
   { timestamps: true },
 );

@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Check, ChevronDown, ChevronUp, Compass, Copy, Eye, Loader2, Pencil, Plus, Rocket, Share2, Trash2, Users } from 'lucide-react';
+import { ArrowLeft, Check, IdCard, ChevronDown, ChevronUp, Compass, Copy, Eye, Loader2, Pencil, Plus, Rocket, Share2, Trash2, Users } from 'lucide-react';
 import { api, queryKeys } from '@/lib/api-client';
 import { useEditorStore } from '@/stores/editor-store';
 import { fieldErrors, inviteContentSchema } from '@/lib/validation';
@@ -19,7 +19,6 @@ import { DeleteInvite } from '@/components/invite/DeleteInvite';
 import { QrCodeButton } from '@/components/invite/QrCodeButton';
 import { getTemplate } from '@/lib/themes';
 import { BLESSING_SUGGESTIONS, DEFAULT_BLESSINGS, getLanguage } from '@/lib/templates/languages';
-import { FamilyLinkButton } from '@/components/invite/FamilyLinkButton';
 import { GuidedTour, TourButton } from '@/components/tour/GuidedTour';
 import { EDITOR_TOUR } from '@/components/tour/tours';
 
@@ -149,12 +148,12 @@ function EditorTopBar({ draft, dirty, saving, onSave, saveError }: {
         <div className="flex flex-wrap items-center gap-2">
           <TourButton id="editor"><Compass className="h-4 w-4" /> <span className="hidden sm:inline">Tour</span></TourButton>
           <PageLink data-tour="ed-guests" href={`/dashboard/invites/${draft.id}/guests`} className="btn btn-ghost btn-sm"><Users className="h-4 w-4" /> Guests</PageLink>
+          <PageLink data-tour="ed-cards" href={`/dashboard/invites/${draft.id}/cards`} className="btn btn-ghost btn-sm"><IdCard className="h-4 w-4" /> Family cards</PageLink>
           {draft.published && (
             <span data-tour="ed-share" className="flex flex-wrap gap-2">
               <button type="button" className="btn btn-outline btn-sm" onClick={copy}>{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} {copied ? 'Copied' : 'Copy link'}</button>
               <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn-sm bg-[#25D366] text-white"><Share2 className="h-4 w-4" /> WhatsApp</a>
               <QrCodeButton link={link} slug={draft.slug} names={`${draft.partner1} & ${draft.partner2}`} colour={getTemplate(draft.theme).colors.heading} />
-              {getTemplate(draft.theme).layout === 'lifafa' && <FamilyLinkButton link={link} couple={`${draft.partner1} & ${draft.partner2}`} />}
             </span>
           )}
           <button type="button" data-tour="ed-save" className="btn btn-outline btn-sm" disabled={!dirty || saving} onClick={() => onSave({})}>
@@ -294,10 +293,24 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
         )}
       </Section>
 
-      <Section title="RSVP & shagun" tour="ed-rsvp">
+      <Section title="Guest replies & shagun" tour="ed-rsvp">
+        {/* Some families only want to send a beautiful card, without asking anyone to reply. */}
+        <label className="mb-4 flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-cream/50 p-3.5">
+          <input type="checkbox" className="mt-0.5 h-5 w-5 flex-none accent-maroon" checked={draft.rsvpEnabled !== false} onChange={(e) => update({ rsvpEnabled: e.target.checked })} />
+          <span>
+            <span className="block font-semibold text-ink">Ask guests to reply (RSVP)</span>
+            <span className="block text-sm text-muted">{draft.rsvpEnabled !== false
+              ? 'Guests tell you if they’re coming, how many people and for which functions.'
+              : 'Off: your invite is just the card, with functions and maps. No reply form.'}</span>
+          </span>
+        </label>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field id="rsvpDeadline" label="RSVP by (optional)" error={errors.rsvpDeadline}><input type="date" min={today} max={draft.weddingDate || undefined} {...text('rsvpDeadline')} /></Field>
-          <div className="hidden sm:block" />
+          {draft.rsvpEnabled !== false && (
+            <>
+              <Field id="rsvpDeadline" label="Ask guests to reply by (optional)" error={errors.rsvpDeadline}><input type="date" min={today} max={draft.weddingDate || undefined} {...text('rsvpDeadline')} /></Field>
+              <div className="hidden sm:block" />
+            </>
+          )}
           <Field id="upiId" label="UPI ID for shagun (optional)" error={errors.upiId}><input {...text('upiId')} placeholder="name@okhdfcbank" autoCapitalize="none" /></Field>
           <Field id="upiName" label="Name shown in UPI app"><input {...text('upiName')} placeholder="Aarav Sharma" /></Field>
         </div>

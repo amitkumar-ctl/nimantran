@@ -112,6 +112,7 @@ export function sampleInvite(theme: Theme = 'royal'): InviteData {
     rsvpDeadline: '2026-11-25',
     upiId: '',
     upiName: '',
+    rsvpEnabled: true,
     updatedAt: '2026-10-20T00:00:00.000Z',
   };
 }

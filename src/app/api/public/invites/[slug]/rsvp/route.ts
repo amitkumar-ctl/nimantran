@@ -32,7 +32,7 @@ const hash = (t: string) => createHash('sha256').update(t).digest('hex');
 
 async function loadInvite(slug: string) {
   await connectDB();
-  return Invite.findOne({ slug, published: true }, { _id: 1, owner: 1, events: 1 }).lean();
+  return Invite.findOne({ slug, published: true }, { _id: 1, owner: 1, events: 1, rsvpEnabled: 1 }).lean();
 }
 
 async function isOwner(ownerId: unknown) {
@@ -86,6 +86,7 @@ export async function POST(req: Request, ctx: Ctx) {
   const { slug } = await ctx.params;
   const invite = await loadInvite(slug);
   if (!invite) return error('This invitation is no longer available', 404);
+  if (invite.rsvpEnabled === false) return error('This invitation isn’t taking replies online.', 403);
   if (await isOwner(invite.owner)) {
     return error('This is your own invitation. Guests RSVP here; you can see their replies in your guest list.', 403);
   }
