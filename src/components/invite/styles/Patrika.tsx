@@ -95,7 +95,7 @@ function Events({ invite, design, framed, link, H2, H3 }: StyleProps) {
 function Swatch({ design, names: [a, b], blessing, size, city }: SwatchProps) {
   const c = colorsOf(design);
   return (
-    <SwatchSvg size={size}>
+    <SwatchSvg size={size} band={100}>
       <rect width="400" height="500" fill={c.heroVia} />
       <SvgScript anchor="start" text={blessing} x={36} y={92} size={16} fill={c.accent} latinFont={SVG_FONT.josefin} lang={design.lang} width={200} />
       <text x="36" y="132" fill={c.accent} style={{ fontFamily: SVG_FONT.bodoni, fontStyle: 'italic' }} fontSize="20">The wedding of</text>

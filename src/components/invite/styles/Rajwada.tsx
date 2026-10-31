@@ -150,7 +150,7 @@ function Swatch({ design, names: [a, b], blessing, size }: SwatchProps) {
   const c = colorsOf(design);
   const id = `rj-${design.id}`;
   return (
-    <SwatchSvg size={size}>
+    <SwatchSvg size={size} band={100}>
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={c.heroFrom} /><stop offset=".55" stopColor={c.heroVia} /><stop offset="1" stopColor={c.heroTo} /></linearGradient>
       </defs>

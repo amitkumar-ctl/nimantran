@@ -111,7 +111,7 @@ function Events({ invite, design, framed, link, H2, H3 }: StyleProps) {
 function Swatch({ design, names: [a, b], blessing, size }: SwatchProps) {
   const c = colorsOf(design);
   return (
-    <SwatchSvg size={size}>
+    <SwatchSvg size={size} band={140}>
       <rect width="400" height="500" fill={c.heroVia} />
       <rect x="16" y="16" width="368" height="468" fill="none" stroke={c.accent} strokeWidth="2" />
       <rect x="28" y="28" width="344" height="444" fill="none" stroke={c.accent} strokeOpacity=".5" />

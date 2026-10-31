@@ -143,7 +143,7 @@ function Events({ invite, design, framed, link, H2, H3 }: StyleProps) {
 function Swatch({ design, names: [a, b], blessing, size }: SwatchProps) {
   const c = colorsOf(design);
   return (
-    <SwatchSvg size={size}>
+    <SwatchSvg size={size} band={178}>
       <rect width="400" height="500" fill={c.heroVia} />
       <g fill={c.heroText}>
         {Array.from({ length: 21 }, (_, i) => <g key={i}><circle cx={20 + i * 18} cy="20" r="2.2" /><circle cx={20 + i * 18} cy="440" r="2.2" /></g>)}

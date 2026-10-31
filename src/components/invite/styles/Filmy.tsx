@@ -114,7 +114,7 @@ function Swatch({ design, names: [a, b], blessing, size }: SwatchProps) {
   const c = colorsOf(design);
   const rays = Array.from({ length: 20 }, (_, i) => i);
   return (
-    <SwatchSvg size={size}>
+    <SwatchSvg size={size} band={175}>
       <rect width="400" height="500" fill={c.heroFrom} />
       <g fill={c.heroVia}>
         {rays.map((i) => {

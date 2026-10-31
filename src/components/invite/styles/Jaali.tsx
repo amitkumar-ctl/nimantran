@@ -104,7 +104,7 @@ function Swatch({ design, names: [a, b], blessing, size }: SwatchProps) {
   const c = colorsOf(design);
   const id = `ja-s-${design.id}`;
   return (
-    <SwatchSvg size={size}>
+    <SwatchSvg size={size} band={130}>
       <defs>
         <Lattice id={`${id}-p`} line={c.deep} />
         <clipPath id={`${id}-c`}><path d="M40 500V170C40 110 130 60 200 30C270 60 360 110 360 170V500Z" /></clipPath>

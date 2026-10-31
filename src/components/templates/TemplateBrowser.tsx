@@ -57,7 +57,7 @@ export function TemplateBrowser(props: Props) {
     setFilters((f) => ({ ...f, [k]: f[k] === v ? undefined : v }));
 
   return (
-    <div className={props.className}>
+    <div className={`min-w-0 ${props.className ?? ''}`}>
       <div className="flex gap-2">
         <label className="relative flex-1">
           <span className="sr-only">Search designs</span>
@@ -76,12 +76,13 @@ export function TemplateBrowser(props: Props) {
       </div>
 
       {/* Language is the first thing most families decide, so it's always on show. */}
-      <div className="-mx-1 mt-3 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]" role="group" aria-label="Language">
-        <Chip on={!filters.lang} onClick={() => setFilters((f) => ({ ...f, lang: undefined }))}>All languages</Chip>
+      {/* w-0 + min-w-full: the row scrolls sideways instead of making the page wider. */}
+      <div className="mt-3 flex w-0 min-w-full gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none]" role="group" aria-label="Language">
+        <Chip nowrap on={!filters.lang} onClick={() => setFilters((f) => ({ ...f, lang: undefined }))}>All languages</Chip>
         {LANGUAGES.map((l) => {
           const sp = scriptProps(l.native);
           return (
-            <Chip key={l.code} on={filters.lang === l.code} onClick={() => toggle('lang', l.code)}>
+            <Chip nowrap key={l.code} on={filters.lang === l.code} onClick={() => toggle('lang', l.code)}>
               {l.code === 'en' ? 'English' : <><span lang={sp.lang} dir={sp.dir} className={sp.className}>{l.native}</span><span className="text-xs text-muted">{l.name}</span></>}
             </Chip>
           );
@@ -161,8 +162,8 @@ function FilterRow({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button type="button" aria-pressed={on} onClick={onClick} className={`chip ${on ? 'chip-on' : 'bg-white hover:border-gold'}`}>{children}</button>;
+function Chip({ on, onClick, children, nowrap = false }: { on: boolean; onClick: () => void; children: React.ReactNode; nowrap?: boolean }) {
+  return <button type="button" aria-pressed={on} onClick={onClick} className={`chip ${nowrap ? 'flex-none whitespace-nowrap' : ''} ${on ? 'chip-on' : 'bg-white hover:border-gold'}`}>{children}</button>;
 }
 
 export function BrowseCard({ t }: { t: TemplateInfo }) {

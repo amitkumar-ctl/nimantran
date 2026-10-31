@@ -101,12 +101,17 @@ export function fit(text: string, base: number, width: number, em = 0.55) {
 }
 
 /** Swatch viewBox: the whole card when large, a band around the names when small. */
-export const swatchBox = (size: SwatchProps['size']) => (size === 'lg' ? '0 0 400 500' : '0 130 400 240');
+/**
+ * Large cards show the whole 400×500 drawing. Small ones (pickers, lists) are
+ * 5:3 and show a 400×240 band of it starting at `band`: each look sets where
+ * its names sit, so nothing important is cut off at any card width.
+ */
+export const swatchBox = (size: SwatchProps['size'], band = 130) => (size === 'lg' ? '0 0 400 500' : `0 ${band} 400 240`);
 
-export function SwatchSvg({ size, children, label }: { size: SwatchProps['size']; children: ReactNode; label?: string }) {
-  const dims = { sm: 'h-20', md: 'h-28', lg: 'aspect-[4/5]' }[size];
+export function SwatchSvg({ size, children, label, band }: { size: SwatchProps['size']; children: ReactNode; label?: string; band?: number }) {
+  const dims = size === 'lg' ? 'aspect-[4/5]' : 'aspect-[5/3]';
   return (
-    <svg viewBox={swatchBox(size)} preserveAspectRatio="xMidYMid slice" className={`block w-full ${dims}`} aria-hidden="true" role="img" aria-label={label}>
+    <svg viewBox={swatchBox(size, band)} preserveAspectRatio="xMidYMid meet" className={`block w-full ${dims}`} aria-hidden="true" role="img" aria-label={label}>
       {children}
     </svg>
   );

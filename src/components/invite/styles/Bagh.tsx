@@ -132,7 +132,7 @@ function Events({ invite, design, framed, link, H2, H3 }: StyleProps) {
 function Swatch({ design, names: [a, b], blessing, size }: SwatchProps) {
   const c = colorsOf(design);
   return (
-    <SwatchSvg size={size}>
+    <SwatchSvg size={size} band={110}>
       <Filters />
       <rect width="400" height="500" fill={c.surface} />
       <g filter="url(#bg-wc)">

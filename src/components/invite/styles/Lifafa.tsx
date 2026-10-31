@@ -118,7 +118,7 @@ function Swatch({ design, names: [a, b], blessing, size }: SwatchProps) {
   const c = colorsOf(design);
   const ini = initialsOf(a, b);
   return (
-    <SwatchSvg size={size}>
+    <SwatchSvg size={size} band={90}>
       <defs><radialGradient id={`lf-${design.id}`} cx=".5" cy=".3" r=".9"><stop offset="0" stopColor={c.heroFrom} /><stop offset="1" stopColor={c.heroTo} /></radialGradient></defs>
       <rect width="400" height="500" fill={`url(#lf-${design.id})`} />
       <SvgScript text={blessing} y={84} size={18} fill={c.heroText} latinFont={SVG_FONT.italiana} lang={design.lang} width={280} />
