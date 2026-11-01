@@ -15,6 +15,8 @@ export type CardInput = {
   salutation: string; invited: string; english: boolean;
   dateLabel: string; place: string; link: string; replies: boolean;
   colors: Colors; nameStyle: 'script' | 'serif'; fonts: CardFonts;
+  /** Unpaid invite: stamp SAMPLE across it and leave out the QR code (the link doesn't open yet). */
+  sample?: boolean;
 };
 
 const W = 1080, H = 1350;
@@ -106,6 +108,20 @@ export async function drawFamilyCard(c: CardInput): Promise<HTMLCanvasElement> {
 
   fitSize(g, c.dateLabel, (px) => `600 ${px}px ${f.display}`, 42, inner); text(c.dateLabel, 890, k.heroText);
   if (c.place) { fitSize(g, c.place, (px) => `${px}px ${f.display}`, 34, inner); text(c.place, 942, withAlpha(k.heroText, 0.9)); }
+
+  if (c.sample) {
+    // Not sendable: no QR, and a stamp across the whole card.
+    g.font = `500 28px ${f.body}`;
+    text('Sample card · publish your invite to send real cards', 1120, k.heroText);
+    g.save();
+    g.translate(W / 2, H / 2); g.rotate(-Math.PI / 6);
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = `700 210px ${f.body}`;
+    g.lineWidth = 10; g.strokeStyle = 'rgba(255,255,255,0.55)'; g.fillStyle = 'rgba(160,20,30,0.42)';
+    for (const y of [-420, 0, 420]) { g.strokeText('SAMPLE', 0, y); g.fillText('SAMPLE', 0, y); }
+    g.restore();
+    return canvas;
+  }
 
   // QR code to the family's own link, on a white tile.
   const Q = await import('qrcode');

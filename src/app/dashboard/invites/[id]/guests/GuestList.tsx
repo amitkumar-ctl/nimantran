@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Compass, Download, Lock, Plus, RefreshCw, Search } from 'lucide-react';
-import { PremiumOffer, usePlan } from '@/components/premium/Upgrade';
+import { PremiumOffer, useCanShare } from '@/components/premium/Upgrade';
 import { api, queryKeys } from '@/lib/api-client';
 import { PageLink } from '@/components/ui/PageLink';
 import { inr, ShagunRegister, type Prefill } from './ShagunRegister';
@@ -19,10 +19,9 @@ export function GuestList({ id }: { id: string }) {
   const [prefill, setPrefill] = useState<Prefill>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
-  const plan = usePlan();
   const [offer, setOffer] = useState(false);
-  // Download is a Premium perk while payments are on.
-  const locked = !!plan?.enabled && invite.data?.premium === false;
+  // Download is a Premium perk while payments are on (older free invites keep it).
+  const locked = useCanShare(invite.data) === false;
 
   const stats = useMemo(() => {
     const list = rsvps.data ?? [];

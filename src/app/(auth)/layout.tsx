@@ -12,7 +12,7 @@ export default function AuthLayout({ children }: LayoutProps<'/'>) {
           <p className="font-display text-3xl">one beautiful link.</p>
           <p className="mt-4 max-w-sm text-cream/75">Every function, venue, guest reply and shagun, shared in a single WhatsApp message.</p>
         </div>
-        <p className="text-sm text-cream/50">Free to create · No app needed for guests</p>
+        <p className="text-sm text-cream/50">Free to design · No app needed for guests</p>
       </aside>
       <main className="flex flex-col items-center justify-center px-4 py-12 sm:px-6">
         <div className="mb-8 lg:hidden"><Logo /></div>

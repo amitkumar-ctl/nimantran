@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
+import { canShare } from '@/lib/payments/config';
 import type { Types } from 'mongoose';
 import { cookies } from 'next/headers';
 import { connectDB } from '@/lib/db';
@@ -32,7 +33,8 @@ const hash = (t: string) => createHash('sha256').update(t).digest('hex');
 
 async function loadInvite(slug: string) {
   await connectDB();
-  return Invite.findOne({ slug, published: true }, { _id: 1, owner: 1, events: 1, rsvpEnabled: 1 }).lean();
+  const invite = await Invite.findOne({ slug, published: true }, { _id: 1, owner: 1, events: 1, rsvpEnabled: 1, premium: 1, createdAt: 1 }).lean();
+  return invite && canShare(invite) ? invite : null; // unpaid invites aren't open to guests
 }
 
 async function isOwner(ownerId: unknown) {

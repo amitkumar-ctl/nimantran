@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { Invite } from '@/lib/models/Invite';
 import { Payment } from '@/lib/models/Payment';
 import { inviteTag } from '@/lib/invites';
+import { canShare } from './config';
 
 async function refreshPublic(inviteId: unknown) {
   const inv = await Invite.findById(inviteId, { slug: 1, customSlug: 1 }).lean();
@@ -28,8 +29,8 @@ export async function markPaid(orderId: string, paymentId: string, method = '') 
 }
 
 /**
- * Razorpay reported a refund. A full refund takes Premium away (the custom
- * link keeps redirecting so guests aren't stranded; it just isn't shared any more).
+ * Razorpay reported a refund. A full refund takes Premium away, and with it
+ * publishing: the invite goes back to a draft only the couple can see.
  */
 export async function markRefunded(paymentId: string, refundedAmount: number) {
   const pay = await Payment.findOne({ paymentId, status: 'paid' });
@@ -44,7 +45,10 @@ export async function markRefunded(paymentId: string, refundedAmount: number) {
   await pay.save();
   const stillPaid = await Payment.exists({ invite: pay.invite, status: 'paid' });
   if (!stillPaid) {
-    await Invite.updateOne({ _id: pay.invite }, { $set: { premium: false } });
+    // Back to a free preview: it can't stay published unless it predates the paywall.
+    const inv = await Invite.findById(pay.invite, { createdAt: 1 }).lean();
+    const keepLive = !!inv && canShare({ premium: false, createdAt: inv.createdAt });
+    await Invite.updateOne({ _id: pay.invite }, { $set: { premium: false, ...(keepLive ? {} : { published: false }) } });
     await refreshPublic(pay.invite);
   }
   return pay;

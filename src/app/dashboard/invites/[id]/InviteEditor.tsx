@@ -22,6 +22,8 @@ import { BLESSING_SUGGESTIONS, DEFAULT_BLESSINGS, getLanguage } from '@/lib/temp
 import { GuidedTour, TourButton } from '@/components/tour/GuidedTour';
 import { EDITOR_TOUR } from '@/components/tour/tours';
 import { LinkSection } from '@/components/premium/LinkSection';
+import { UpgradeButton, useCanShare, usePlan } from '@/components/premium/Upgrade';
+import { rupees } from '@/lib/payments/plan';
 import { sharePath } from '@/lib/links';
 
 /** Just the editable fields (drops id, slug, published, updatedAt). */
@@ -111,6 +113,7 @@ export function InviteEditor({ id }: { id: string }) {
                   rsvpSlot={<RsvpForm preview slug={draft.slug} events={draft.events.map((e) => e.name)} />}
                   shagunSlot={<Shagun upiId={draft.upiId} upiName={draft.upiName} couple={`${draft.partner1} & ${draft.partner2}`} preview />}
                 />
+                <PreviewFooter invite={draft} />
               </div>
             </div>
           </div>
@@ -125,6 +128,8 @@ function EditorTopBar({ draft, dirty, saving, onSave, saveError }: {
 }) {
   const [copied, setCopied] = useState(false);
   const origin = useOrigin();
+  const shareable = useCanShare(draft);
+  const plan = usePlan();
   const link = `${origin}${sharePath(draft)}`;
   const whatsapp = `https://wa.me/?text=${encodeURIComponent(`You're invited to the wedding of ${draft.partner1} & ${draft.partner2} 💍\n${link}`)}`;
 
@@ -162,7 +167,14 @@ function EditorTopBar({ draft, dirty, saving, onSave, saveError }: {
           <button type="button" data-tour="ed-save" className="btn btn-outline btn-sm" disabled={!dirty || saving} onClick={() => onSave({})}>
             {saving && <Loader2 className="h-4 w-4 animate-spin" />} Save
           </button>
-          {!draft.published ? (
+          {!draft.published && shareable === false ? (
+            // Unpaid: publishing is what Premium buys. Pays, then saves and publishes.
+            <span data-tour="ed-publish" className="inline-flex">
+              <UpgradeButton inviteId={draft.id} className="btn btn-primary btn-sm" onPaid={() => onSave({ published: true })}>
+                Publish · {plan ? rupees(plan.price) : ''}
+              </UpgradeButton>
+            </span>
+          ) : !draft.published ? (
             // Wrapper: the tour's "QR code" step points here until the invite is published.
             <span data-tour="ed-qr-soon" className="inline-flex">
               <button type="button" data-tour="ed-publish" className="btn btn-primary btn-sm" disabled={saving} onClick={() => onSave({ published: true })}>
@@ -210,6 +222,8 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
 
   return (
     <div className="space-y-5">
+      <LinkSection invite={draft} />
+
       <Section title="The couple" tour="ed-couple">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="partner1" label="Partner 1" error={errors.partner1}><input {...text('partner1')} /></Field>
@@ -324,8 +338,6 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
         </p>
       </Section>
 
-      <LinkSection invite={draft} />
-
       <section data-tour="ed-delete" className="rounded-2xl border border-red-100 bg-white/60 p-5 sm:p-6">
         <h2 className="font-display text-xl font-semibold text-maroon-900">Delete invite</h2>
         <p className="mb-3 text-sm text-muted">Created by mistake? Remove this invite and its guest replies for good.</p>
@@ -340,6 +352,28 @@ function EditorForm({ errors }: { errors: Record<string, string> }) {
           }}
         />
       </section>
+    </div>
+  );
+}
+
+/** Bottom of the editor preview: what guests will (or won't yet) see there. */
+function PreviewFooter({ invite }: { invite: InviteData }) {
+  const plan = usePlan();
+  const shareable = useCanShare(invite);
+  if (!plan?.enabled || invite.premium) return null;
+  return (
+    <div className="bg-maroon-900 px-5 py-6 text-center text-cream">
+      {shareable ? (
+        <>
+          <p className="font-display text-lg text-gold-200">“Made with love on Nimantran”</p>
+          <p className="mt-1 text-xs text-cream/75">Guests see this footer on free invites. Premium removes it.</p>
+        </>
+      ) : (
+        <>
+          <p className="font-display text-lg text-gold-200">Preview: only you can see this</p>
+          <p className="mx-auto mt-1 max-w-[260px] text-xs text-cream/75">Guests can open your invite once you publish it with Premium ({rupees(plan.price)}, once for your wedding).</p>
+        </>
+      )}
     </div>
   );
 }

@@ -1,16 +1,19 @@
 import 'server-only';
-import { FREE_FAMILY_CARDS, type PlanInfo } from './plan';
+import { canShareWith, FREE_FAMILY_CARDS, MAX_INVITES, type PlanInfo } from './plan';
 
 /*
  * Payments are off until PAYMENTS_ENABLED=true. While off, nothing about
  * Premium is shown and every invite works exactly as before (no limits).
- * Invites that already paid keep their perks either way.
+ * While on, an invite must be paid for (Premium) before it can be published
+ * and opened by guests. Invites that already paid keep their perks either way.
  */
 
-export const paymentsEnabled = () => process.env.PAYMENTS_ENABLED === 'true';
+// Forgiving about how it's typed in the hosting dashboard: true, TRUE, "true", 1, yes, on.
+const truthy = (v: string | undefined) => ['true', '1', 'yes', 'on'].includes((v ?? '').trim().replace(/^["']|["']$/g, '').toLowerCase());
+export const paymentsEnabled = () => truthy(process.env.PAYMENTS_ENABLED);
 
 const paise = (v: string | undefined, fallback: number) => {
-  const n = Number(v);
+  const n = Number((v ?? '').trim().replace(/^["']|["']$/g, ''));
   return Number.isInteger(n) && n >= 100 ? n : fallback;
 };
 
@@ -22,7 +25,24 @@ export const premiumMrp = () => {
   return mrp > premiumPrice() ? mrp : 0;
 };
 
-export const planInfo = (): PlanInfo => ({ enabled: paymentsEnabled(), price: premiumPrice(), mrp: premiumMrp(), freeFamilyCards: FREE_FAMILY_CARDS });
+/**
+ * When "pay to publish" began. Invites created before it keep working for free.
+ * PAYWALL_START can move it (ISO date, e.g. 2026-11-01T00:00:00+05:30).
+ */
+export function paywallStart() {
+  const raw = (process.env.PAYWALL_START ?? '').trim().replace(/^["']|["']$/g, '');
+  const d = new Date(raw || '2026-11-01T00:00:00+05:30');
+  return Number.isNaN(d.getTime()) ? '2026-11-01T00:00:00+05:30' : d.toISOString();
+}
+
+export const planInfo = (): PlanInfo => ({
+  enabled: paymentsEnabled(), price: premiumPrice(), mrp: premiumMrp(),
+  freeFamilyCards: FREE_FAMILY_CARDS, maxInvites: MAX_INVITES, paywallStart: paywallStart(),
+});
+
+/** Can guests open this invite (and can it be published)? See canShareWith. */
+export const canShare = (inv: { premium?: boolean | null; createdAt?: string | Date | null }) =>
+  canShareWith(inv, { enabled: paymentsEnabled(), paywallStart: paywallStart() });
 
 /** Razorpay keys, or a message saying what's missing. */
 export function razorpayConfig() {
@@ -34,7 +54,7 @@ export function razorpayConfig() {
 }
 
 /**
- * Limits only apply while payments are on: with them off, family cards and
- * the guest list download stay free for everyone, as before.
+ * Unlimited family cards and the guest list download. Limits only apply while
+ * payments are on, and not to invites from before the paywall (they had these free).
  */
-export const hasPerks = (invite: { premium?: boolean | null }) => !paymentsEnabled() || invite.premium === true;
+export const hasPerks = canShare;

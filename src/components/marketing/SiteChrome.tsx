@@ -9,6 +9,7 @@ const NAV = [
   { href: '/templates', label: 'Templates' },
   { href: '/wedding-invitation-wording', label: 'Wording ideas' },
   { href: '/#how-it-works', label: 'How it works' },
+  { href: '/pricing', label: 'Pricing' },
 ];
 
 export function SiteHeader() {

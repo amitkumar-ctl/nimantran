@@ -128,7 +128,7 @@ export default function WordingPage() {
       <div className="mt-12 rounded-3xl bg-maroon-900 p-8 text-center text-cream">
         <p className="font-display text-3xl font-semibold text-gold-200">Turn your wording into a beautiful invite</p>
         <p className="mt-2 text-cream/80">Paste your message into {site.name}, add your functions and share one link on WhatsApp.</p>
-        <Link href="/signup" className="btn mt-6 bg-gold-200 text-maroon-900">Create your invite free</Link>
+        <Link href="/signup" className="btn mt-6 bg-gold-200 text-maroon-900">Start designing free</Link>
       </div>
     </main>
   );

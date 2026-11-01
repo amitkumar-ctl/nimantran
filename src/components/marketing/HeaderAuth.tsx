@@ -38,7 +38,7 @@ export function HeaderAuth() {
   return (
     <>
       <Link href="/login" className="btn btn-ghost btn-sm hidden sm:inline-flex">Log in</Link>
-      <Link href="/signup" className="btn btn-primary btn-sm">Create free invite</Link>
+      <Link href="/signup" className="btn btn-primary btn-sm">Start free</Link>
     </>
   );
 }

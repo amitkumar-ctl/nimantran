@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { UpgradeButton, usePlan } from '@/components/premium/Upgrade';
+import { rupees } from '@/lib/payments/plan';
 import { Download, Loader2, Share2, X } from 'lucide-react';
 import type { InviteData } from '@/lib/types';
 import { getTemplate } from '@/lib/themes';
@@ -23,8 +25,10 @@ export function whatsappUrl(phone: string, text: string) {
 }
 
 /** Preview a family's card, then share it (phones) or download it. */
-export function FamilyCardDialog({ invite, family, link, onClose, onSent }: {
+export function FamilyCardDialog({ invite, family, link, onClose, onSent, sample = false }: {
   invite: InviteData; family: string; link: string; onClose: () => void; onSent?: () => void;
+  /** Unpaid invite: a watermarked preview with no way to send it. */
+  sample?: boolean;
 }) {
   const fontRefs = useRef<Record<string, HTMLSpanElement | null>>({});
   const [png, setPng] = useState<{ url: string; blob: Blob } | null>(null);
@@ -33,6 +37,7 @@ export function FamilyCardDialog({ invite, family, link, onClose, onSent }: {
   const blessingFont = scriptProps(invite.blessing).className || 'font-display';
   const language = getLanguage(inviteLanguage(invite.blessing, design.lang));
   const langFont = scriptProps(language.salutation, language.code).className || 'font-display';
+  const plan = usePlan();
   const canShareFiles = typeof navigator !== 'undefined' && 'canShare' in navigator;
 
   useEffect(() => {
@@ -43,14 +48,14 @@ export function FamilyCardDialog({ invite, family, link, onClose, onSent }: {
       family, partner1: invite.partner1, partner2: invite.partner2, blessing: invite.blessing,
       salutation: language.salutation, invited: language.invited, english: language.code === 'en',
       dateLabel: formatLongDate(invite.weddingDate), place: invite.venue || invite.city, link, replies: invite.rsvpEnabled !== false,
-      colors: design.colors, nameStyle: design.nameStyle,
+      colors: design.colors, nameStyle: design.nameStyle, sample,
       fonts: { script: font('script', 'cursive'), display: font('display', 'serif'), body: font('body', 'sans-serif'), blessing: font('blessing', 'serif'), lang: font('lang', 'serif') },
     })
       .then((canvas) => new Promise<Blob>((res, rej) => canvas.toBlob((b) => (b ? res(b) : rej(new Error('Could not make the card'))), 'image/jpeg', 0.92)))
       .then((blob) => { if (alive) { made = URL.createObjectURL(blob); setPng({ url: made, blob }); } })
       .catch((e) => alive && setError((e as Error).message));
     return () => { alive = false; if (made) URL.revokeObjectURL(made); };
-  }, [family, invite, link, design.colors, design.nameStyle, language]);
+  }, [family, invite, link, design.colors, design.nameStyle, language, sample]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -87,11 +92,20 @@ export function FamilyCardDialog({ invite, family, link, onClose, onSent }: {
             ? <img src={png.url} alt={`Invitation card for ${family}`} className="h-full w-full object-contain" />
             : error ? <p className="p-4 text-sm text-red-700">{error}</p> : <Loader2 className="h-6 w-6 animate-spin text-muted" />}
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <button type="button" className="btn btn-primary" disabled={!png} onClick={share}><Share2 className="h-4 w-4" /> {canShareFiles ? 'Share' : 'Save'}</button>
-          <button type="button" className="btn btn-outline" disabled={!png} onClick={download}><Download className="h-4 w-4" /> Download</button>
-        </div>
-        <p className="mt-2 text-center text-xs text-muted">On a phone, Share sends the card with their link straight to WhatsApp.</p>
+        {sample ? (
+          <div className="mt-3">
+            <p className="mb-3 text-center text-sm text-muted">This is how {family}’s card will look. Publish your invite with Premium to send cards like this, without the stamp, to every family.</p>
+            <UpgradeButton inviteId={invite.id} className="btn btn-primary w-full">Publish with Premium · {plan ? rupees(plan.price) : ''}</UpgradeButton>
+          </div>
+        ) : (
+          <>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button type="button" className="btn btn-primary" disabled={!png} onClick={share}><Share2 className="h-4 w-4" /> {canShareFiles ? 'Share' : 'Save'}</button>
+              <button type="button" className="btn btn-outline" disabled={!png} onClick={download}><Download className="h-4 w-4" /> Download</button>
+            </div>
+            <p className="mt-2 text-center text-xs text-muted">On a phone, Share sends the card with their link straight to WhatsApp.</p>
+          </>
+        )}
         {/* The site's fonts, measured to draw the card with them */}
         <span aria-hidden="true" className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0">
           <span ref={(el) => { fontRefs.current.script = el; }} className="font-script">a</span>

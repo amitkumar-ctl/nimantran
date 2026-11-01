@@ -7,6 +7,7 @@ import { PersonalInvite } from '@/lib/models/PersonalInvite';
 import { error, json, parseBody, requireUser, sentKeysOnly, validId } from '@/lib/api-helpers';
 import { inviteTag, toInviteData } from '@/lib/invites';
 import { updateInviteSchema } from '@/lib/validation';
+import { canShare } from '@/lib/payments/config';
 
 type Ctx = RouteContext<'/api/invites/[id]'>;
 
@@ -36,6 +37,10 @@ export async function PATCH(req: Request, ctx: Ctx) {
   // Dates changed to a day in the past are rejected; unchanged old dates are fine.
   const past = pastDateErrors(changes, invite.toObject());
   if (Object.keys(past).length) return error('Please pick today or a later date', 422, past);
+  // While payments are on, publishing (making the link work for guests) needs Premium.
+  if (changes.published === true && !canShare(invite)) {
+    return error('Publishing your invite comes with Premium. Upgrade to share it with guests.', 402);
+  }
   invite.set(changes);
   await invite.save();
   // Guests see the change on their next visit (no stale copy).

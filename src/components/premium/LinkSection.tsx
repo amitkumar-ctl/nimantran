@@ -7,7 +7,8 @@ import { api, ApiError, queryKeys } from '@/lib/api-client';
 import { CUSTOM_SLUG_RULE, customSlugProblem, sharePath, suggestSlug, tidySlug } from '@/lib/links';
 import type { InviteData } from '@/lib/types';
 import { useEditorStore } from '@/stores/editor-store';
-import { PremiumOffer, usePlan } from './Upgrade';
+import { PremiumOffer, useCanShare, usePlan } from './Upgrade';
+import { PageLink } from '@/components/ui/PageLink';
 
 const noSubscribe = () => () => {};
 const useHost = () => useSyncExternalStore(noSubscribe, () => window.location.host, () => 'getnimantran.com');
@@ -15,16 +16,20 @@ const useHost = () => useSyncExternalStore(noSubscribe, () => window.location.ho
 /** Editor section: the invite's link, the Premium offer, and (once Premium) choosing a short link. */
 export function LinkSection({ invite }: { invite: InviteData }) {
   const plan = usePlan();
+  const live = useCanShare(invite); // older free invites are already live
   if (!invite.premium && !plan?.enabled) return null; // payments off: nothing to show
   return (
-    <section data-tour="ed-premium" className="card p-5 sm:p-6">
+    <section data-tour="ed-premium" className={`p-5 sm:p-6 ${invite.premium ? 'card' : 'rounded-2xl border-2 border-gold bg-white shadow-[0_10px_30px_rgba(201,162,75,0.15)]'}`}>
       <h2 className="flex items-center gap-2 font-display text-2xl font-semibold text-maroon-900">
-        {invite.premium ? <><Crown className="h-5 w-5 text-gold" /> Premium</> : 'Make it Premium'}
+        <Crown className="h-5 w-5 text-gold" /> {invite.premium ? 'Premium' : live ? 'Make it Premium' : 'Publish your invite with Premium'}
       </h2>
       {invite.premium ? <CustomLinkForm invite={invite} /> : (
         <>
-          <p className="mb-4 text-sm text-muted">One payment for this wedding. Everything you have now stays free.</p>
+          <p className="mb-4 text-sm text-muted">{live
+            ? 'Your invite is already live. Premium adds your own short link and removes the footer. One payment for your wedding.'
+            : 'Right now your invite is a private preview that only you can see. One payment publishes it for your guests and adds everything below.'}</p>
           <PremiumOffer inviteId={invite.id} />
+          {!live && <p className="mt-3 text-sm text-muted">Want to see a family card first? <PageLink href={`/dashboard/invites/${invite.id}/cards`} className="font-semibold text-maroon underline underline-offset-2">Make a free sample card</PageLink></p>}
         </>
       )}
     </section>
@@ -60,8 +65,8 @@ function CustomLinkForm({ invite }: { invite: InviteData }) {
   return (
     <div className="mt-1">
       <p className="text-sm text-muted">{invite.customSlug
-        ? 'No footer, unlimited family cards and the guest list download are on. Share your short link below.'
-        : 'Thank you! No footer on your invite, unlimited family cards and the guest list download are on. Now choose your short link.'}</p>
+        ? 'Your invite can be shared, with no footer, unlimited family cards and the guest list download. Share your short link below.'
+        : 'Thank you! Your invite can now be shared, with no footer, unlimited family cards and the guest list download. Now choose your short link.'}</p>
       <form onSubmit={save} className="mt-4">
         <label htmlFor="customSlug" className="label">Your link</label>
         <div className="flex flex-wrap gap-2">

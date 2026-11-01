@@ -4,7 +4,9 @@ import { useState, type FormEvent } from 'react';
 import { sharePath } from '@/lib/links';
 import { useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CalendarHeart, Compass, ExternalLink, Loader2, Pencil, Plus, Users } from 'lucide-react';
+import { CalendarHeart, Compass, Crown, ExternalLink, Loader2, Pencil, Plus, Users } from 'lucide-react';
+import { PriceLine, UpgradeButton, usePlan } from '@/components/premium/Upgrade';
+import { canShareWith, rupees } from '@/lib/payments/plan';
 import { api, ApiError, queryKeys } from '@/lib/api-client';
 import { createInviteSchema, fieldErrors } from '@/lib/validation';
 import { DEFAULT_THEME, isTheme, type Theme } from '@/lib/themes';
@@ -26,6 +28,10 @@ export function DashboardHome() {
   const showCreate = mode === 'open' || (mode === 'auto' && !!template);
   const setShowCreate = (open: boolean) => setMode(open ? 'open' : 'closed');
   const hasInvites = (invites?.length ?? 0) > 0;
+  const plan = usePlan();
+  // One invite per account while payments are on.
+  const atLimit = !!plan?.enabled && (invites?.length ?? 0) >= plan.maxInvites;
+  const unpaid = plan?.enabled ? invites?.find((inv) => !canShareWith(inv, plan)) : undefined;
 
   return (
     <div className="container-page py-8 sm:py-12">
@@ -36,7 +42,7 @@ export function DashboardHome() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <TourButton id="dashboard"><Compass className="h-4 w-4" /> Tour</TourButton>
-          {hasInvites && !showCreate && (
+          {hasInvites && !showCreate && !atLimit && (
             <button type="button" data-tour="new-invite" className="btn btn-primary" onClick={() => setShowCreate(true)}>
               <Plus className="h-4 w-4" /> New invite
             </button>
@@ -50,8 +56,29 @@ export function DashboardHome() {
       {isPending && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <div key={i} className="card h-44 animate-pulse" />)}</div>}
       {isError && <p className="card p-6 text-red-800" role="alert">{error.message}</p>}
 
-      {!isPending && !isError && (!hasInvites || showCreate) && (
+      {!isPending && !isError && (!hasInvites || showCreate) && !atLimit && (
         <CreateInviteCard key={template ?? 'default'} initialTheme={template ?? DEFAULT_THEME} onCancel={hasInvites ? () => setShowCreate(false) : undefined} />
+      )}
+      {!isPending && atLimit && template && invites?.[0] && (
+        <p className="card mb-6 p-4 text-sm text-ink" role="status">
+          Your account has one invite. To use this design, open it and pick the design under <b>Design</b>.{' '}
+          <PageLink href={`/dashboard/invites/${invites[0].id}`} className="font-semibold text-maroon underline underline-offset-2">Open my invite</PageLink>
+        </p>
+      )}
+
+      {/* Unpaid invite: say plainly that guests can't see it yet, and what Premium adds. */}
+      {unpaid && (
+        <section aria-labelledby="premium-banner" className="mb-6 grid gap-5 rounded-2xl border-2 border-gold bg-gradient-to-br from-[#fff8e8] to-white p-5 sm:p-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+          <div>
+            <h2 id="premium-banner" className="flex items-center gap-2 font-display text-2xl font-semibold text-maroon-900"><Crown className="h-5 w-5 text-gold" /> Your invite is a private preview</h2>
+            <p className="mt-1 max-w-2xl text-ink/80">Design it as much as you like, free. When it’s ready, publish it with Premium to share it with guests: one link for WhatsApp, a QR code, guest replies, family cards for everyone, your own short link and no footer.</p>
+            <PriceLine className="mt-3" />
+          </div>
+          <div className="flex flex-col items-start gap-2 md:items-end">
+            <UpgradeButton inviteId={unpaid.id} className="btn btn-primary px-6 py-3" />
+            <a href="/pricing" target="_blank" className="text-sm text-muted underline underline-offset-2 hover:text-ink">What’s included · refunds</a>
+          </div>
+        </section>
       )}
 
       {hasInvites && (
@@ -72,9 +99,15 @@ export function DashboardHome() {
                 {/* One row: Edit · replies/Guests · View, and delete on the right. */}
                 <div className="flex flex-wrap items-center gap-2 [&>.btn]:whitespace-nowrap">
                   <PageLink href={`/dashboard/invites/${inv.id}`} className="btn btn-outline btn-sm"><Pencil className="h-3.5 w-3.5" /> Edit</PageLink>
-                  <PageLink href={`/dashboard/invites/${inv.id}/guests`} className="btn btn-outline btn-sm"><Users className="h-3.5 w-3.5" /> {inv.rsvpEnabled || inv.rsvpCount ? `${inv.rsvpCount} ${inv.rsvpCount === 1 ? 'reply' : 'replies'}` : 'Guests'}</PageLink>
+                  {/* Replies only come in once guests can open it. */}
+                  {!(plan?.enabled && !canShareWith(inv, plan)) && (
+                    <PageLink href={`/dashboard/invites/${inv.id}/guests`} className="btn btn-outline btn-sm"><Users className="h-3.5 w-3.5" /> {inv.rsvpEnabled || inv.rsvpCount ? `${inv.rsvpCount} ${inv.rsvpCount === 1 ? 'reply' : 'replies'}` : 'Guests'}</PageLink>
+                  )}
                   {inv.published && (
                     <a href={sharePath(inv)} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm"><ExternalLink className="h-3.5 w-3.5" /> View</a>
+                  )}
+                  {plan?.enabled && !canShareWith(inv, plan) && (
+                    <UpgradeButton inviteId={inv.id} className="btn btn-sm border border-gold bg-[#fff3d1] text-[#5c3d06] hover:bg-[#ffe9ad]">Publish · {rupees(plan.price)}</UpgradeButton>
                   )}
                   <DeleteInvite id={inv.id} published={inv.published} rsvpCount={inv.rsvpCount} tour={i === 0 ? 'invite-delete' : undefined} />
                 </div>
@@ -89,6 +122,7 @@ export function DashboardHome() {
 
 function CreateInviteCard({ initialTheme, onCancel }: { initialTheme: Theme; onCancel?: () => void }) {
   const qc = useQueryClient();
+  const plan = usePlan();
   const [form, setForm] = useState({ partner1: '', partner2: '', weddingDate: '', theme: initialTheme });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -115,7 +149,7 @@ function CreateInviteCard({ initialTheme, onCancel }: { initialTheme: Theme; onC
   return (
     <form onSubmit={onSubmit} className="card p-5 sm:p-8" noValidate>
       <h2 className="font-display text-3xl font-semibold text-maroon-900">Start your invitation ✨</h2>
-      <p className="mb-6 text-sm text-muted">Just the basics. You can add every function, venue and your UPI shagun next.</p>
+      <p className="mb-6 text-sm text-muted">Just the basics. You can add every function, venue and your UPI shagun next.{plan?.enabled ? ' Designing and previewing is free; you pay only when you publish it for guests.' : ''}</p>
       <div className="grid gap-4 sm:grid-cols-2">
         {(['partner1', 'partner2'] as const).map((k, i) => (
           <div key={k} data-tour={i === 0 ? 'create-names' : undefined}>

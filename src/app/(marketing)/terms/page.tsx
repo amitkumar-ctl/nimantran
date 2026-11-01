@@ -35,7 +35,7 @@ export default function TermsPage() {
       <p>By creating an account or using {site.name}, you agree to these terms. You must be at least 18 years old to create an account. If you use {site.name} for someone else (for example, for your sister’s wedding), you confirm you have their permission.</p>
 
       <H2 id="service">2. The service</H2>
-      <p>{site.name} lets you create a wedding invitation website, share it by link or QR code, collect guest replies (RSVPs) and display shagun details. Creating and sharing invitations is free. An optional one-time Premium upgrade adds extras to one invitation; its price and contents are shown on our <Link href="/pricing">Pricing</Link> page and before you pay. Premium payments are processed by Razorpay and covered by our <Link href="/refund-policy">Refund &amp; Cancellation Policy</Link> (full refund within 7 days).</p>
+      <p>{site.name} lets you create a wedding invitation website, share it by link or QR code, collect guest replies (RSVPs) and display shagun details. Designing and previewing an invitation is free. Publishing it so guests can open it requires Premium, a one-time payment for one invitation (invitations created before 1 November 2026 stay live for free). Each account can have one invitation. The price and what Premium includes are shown on our <Link href="/pricing">Pricing</Link> page and before you pay. Premium payments are processed by Razorpay and covered by our <Link href="/refund-policy">Refund &amp; Cancellation Policy</Link> (full refund within 7 days).</p>
 
       <H2 id="account">3. Your account</H2>
       <ul>

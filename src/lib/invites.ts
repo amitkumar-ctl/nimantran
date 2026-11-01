@@ -4,10 +4,11 @@ import { cacheLife, cacheTag } from 'next/cache';
 import { connectDB } from './db';
 import { Invite } from './models/Invite';
 import type { InviteData } from './types';
+import { canShare } from './payments/config';
 
 export const inviteTag = (slug: string) => `invite:${slug}`;
 
-type InviteLike = Record<string, unknown> & { _id: { toString(): string }; updatedAt?: Date };
+type InviteLike = Record<string, unknown> & { _id: { toString(): string }; updatedAt?: Date; createdAt?: Date };
 
 /** Mongoose document/lean object → plain serialisable InviteData. */
 export function toInviteData(doc: InviteLike): InviteData {
@@ -36,6 +37,7 @@ export function toInviteData(doc: InviteLike): InviteData {
     premium: d.premium === true,
     customSlug: d.customSlug ?? '',
     updatedAt: (doc.updatedAt ?? new Date()).toISOString(),
+    createdAt: (doc.createdAt ?? new Date(0)).toISOString(),
   };
 }
 
@@ -44,6 +46,12 @@ export function toInviteData(doc: InviteLike): InviteData {
  * fast response; edits call revalidateTag(inviteTag(slug)) to refresh it.
  */
 export async function getPublicInvite(slug: string): Promise<InviteData | null> {
+  const invite = await loadPublishedInvite(slug);
+  // Checked per request (not cached): unpaid invites can't be opened while payments are on.
+  return invite && canShare(invite) ? invite : null;
+}
+
+async function loadPublishedInvite(slug: string): Promise<InviteData | null> {
   'use cache';
   cacheTag(inviteTag(slug));
   cacheLife('hours');
