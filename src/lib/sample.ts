@@ -101,6 +101,7 @@ export function sampleInvite(theme: Theme = 'royal'): InviteData {
     published: true,
     premium: false,
     customSlug: '',
+    createdAt: '2026-01-01T00:00:00.000Z',
     theme: t.id,
     partner1: s.partner1,
     partner2: s.partner2,

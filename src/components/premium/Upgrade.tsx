@@ -4,13 +4,19 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Crown, Loader2 } from 'lucide-react';
 import { api, ApiError, queryKeys, type CheckoutSuccess, type UpgradeOrder } from '@/lib/api-client';
-import { PREMIUM_PERKS, rupees } from '@/lib/payments/plan';
+import { canShareWith, PREMIUM_PERKS, rupees } from '@/lib/payments/plan';
 import type { InviteData } from '@/lib/types';
 import { useEditorStore } from '@/stores/editor-store';
 
 /** Is Premium on sale, and its price. Undefined while loading. */
 export function usePlan() {
   return useQuery({ queryKey: queryKeys.plan, queryFn: api.plan, staleTime: 10 * 60_000 }).data;
+}
+
+/** Can this invite go live? undefined while the plan is loading. */
+export function useCanShare(inv: { premium?: boolean; createdAt?: string } | undefined) {
+  const plan = usePlan();
+  return plan && inv ? canShareWith(inv, plan) : undefined;
 }
 
 // ---- Razorpay Checkout (https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/) ----
@@ -39,16 +45,24 @@ type Stage = 'idle' | 'starting' | 'paying' | 'confirming';
  * "Upgrade" button: creates the order on our server, opens Razorpay Checkout
  * (UPI, cards, netbanking, wallets), then confirms the payment with our server.
  */
-export function UpgradeButton({ inviteId, className = 'btn btn-primary', children }: { inviteId: string; className?: string; children?: React.ReactNode }) {
+export function UpgradeButton({ inviteId, className = 'btn btn-primary', children, onPaid }: {
+  inviteId: string; className?: string; children?: React.ReactNode;
+  /** After paying. Default: publish the invite (that's what Premium is bought for). */
+  onPaid?: (invite: InviteData) => unknown;
+}) {
   const qc = useQueryClient();
   const plan = usePlan();
   const [stage, setStage] = useState<Stage>('idle');
   const [err, setErr] = useState('');
 
-  const done = (invite: InviteData | null) => {
+  const done = async (paid: InviteData | null) => {
+    let invite = paid;
     if (invite) {
-      qc.setQueryData(queryKeys.invite(inviteId), invite);
       if (useEditorStore.getState().draft?.id === inviteId) useEditorStore.getState().patchSaved({ premium: invite.premium, customSlug: invite.customSlug });
+      if (onPaid) await Promise.resolve(onPaid(invite)).catch(() => {});
+      else if (!invite.published) invite = await api.updateInvite(inviteId, { published: true }).catch(() => invite);
+      if (invite && useEditorStore.getState().draft?.id === inviteId) useEditorStore.getState().patchSaved({ published: invite.published });
+      if (invite) qc.setQueryData(queryKeys.invite(inviteId), invite);
     }
     qc.invalidateQueries({ queryKey: queryKeys.invites });
     qc.invalidateQueries({ queryKey: queryKeys.invite(inviteId) });
@@ -64,7 +78,7 @@ export function UpgradeButton({ inviteId, className = 'btn btn-primary', childre
       [order, Razorpay] = await Promise.all([api.upgrade(inviteId), loadCheckout()]);
     } catch (e) {
       setStage('idle');
-      if (e instanceof ApiError && e.status === 409) return done(null); // already Premium (e.g. paid in another tab)
+      if (e instanceof ApiError && e.status === 409) return void done(null); // already Premium (e.g. paid in another tab)
       return setErr(e instanceof ApiError ? e.message : 'The payment window could not load. Check your internet connection, or turn off an ad blocker, and try again.');
     }
     const rzp = new Razorpay({
@@ -79,7 +93,7 @@ export function UpgradeButton({ inviteId, className = 'btn btn-primary', childre
       handler: async (res: CheckoutSuccess) => {
         setStage('confirming');
         try {
-          done(await api.verifyPayment(res));
+          await done(await api.verifyPayment(res));
         } catch (e) {
           setStage('idle');
           setErr(e instanceof Error ? e.message : 'We could not confirm the payment yet. Refresh in a minute.');
@@ -95,13 +109,13 @@ export function UpgradeButton({ inviteId, className = 'btn btn-primary', childre
   if (!plan?.enabled) return null;
   const busy = stage !== 'idle';
   return (
-    <div>
+    <span className={`inline-flex flex-col items-start ${className.includes('w-full') ? 'w-full' : ''}`}>
       <button type="button" className={className} onClick={start} disabled={busy}>
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Crown className="h-4 w-4" />}
-        {stage === 'confirming' ? 'Confirming payment…' : children ?? <>Upgrade for {rupees(plan.price)}</>}
+        {stage === 'confirming' ? 'Confirming payment…' : children ?? <>Publish with Premium · {rupees(plan.price)}</>}
       </button>
-      {err && <p className="mt-2 text-sm text-red-700" role="alert">{err}</p>}
-    </div>
+      {err && <span className="mt-2 block max-w-xs text-sm text-red-700" role="alert">{err}</span>}
+    </span>
   );
 }
 
@@ -113,7 +127,7 @@ export function PriceLine({ className = '' }: { className?: string }) {
     <p className={className}>
       <span className="font-display text-3xl font-semibold text-maroon-900">{rupees(plan.price)}</span>
       {plan.mrp > 0 && <s className="ml-2 text-muted">{rupees(plan.mrp)}</s>}
-      <span className="ml-2 text-sm text-muted">once, for this wedding</span>
+      <span className="ml-2 text-sm text-muted">once, for your wedding</span>
     </p>
   );
 }

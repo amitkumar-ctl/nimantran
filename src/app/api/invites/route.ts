@@ -1,4 +1,6 @@
 import { pastDateErrors, todayIST } from '@/lib/format';
+import { paymentsEnabled } from '@/lib/payments/config';
+import { MAX_INVITES } from '@/lib/payments/plan';
 import { Types } from 'mongoose';
 import { Invite } from '@/lib/models/Invite';
 import { Rsvp } from '@/lib/models/Rsvp';
@@ -28,6 +30,7 @@ export async function GET() {
     rsvpEnabled: i.rsvpEnabled !== false,
     premium: i.premium === true,
     customSlug: i.customSlug ?? '',
+    createdAt: ((i.createdAt as Date | undefined) ?? new Date(0)).toISOString(),
   }));
   return json({ invites: data });
 }
@@ -39,6 +42,10 @@ export async function POST(req: Request) {
   const body = await parseBody(req, createInviteSchema);
   if ('response' in body) return body.response;
 
+  // One invite per account while payments are on (it's what Premium is bought for).
+  if (paymentsEnabled() && (await Invite.countDocuments({ owner: auth.userId })) >= MAX_INVITES) {
+    return error('Your account already has an invite. Open it from My invites to change the names, date or design.', 403);
+  }
   const { partner1, partner2, weddingDate, theme } = body.data;
   const past = pastDateErrors({ weddingDate });
   if (past.weddingDate) return error('Please fix the highlighted fields', 422, past);

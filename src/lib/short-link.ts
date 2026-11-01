@@ -2,6 +2,7 @@ import 'server-only';
 import { connectDB } from './db';
 import { Invite } from './models/Invite';
 import { customSlugProblem } from './links';
+import { canShare } from './payments/config';
 
 /**
  * getnimantran.com/<name> → "/i/<name>" if it's a Premium short link of a
@@ -18,6 +19,6 @@ export async function shortLinkTarget(segment: string): Promise<string | null> {
   }
   if (customSlugProblem(name)) return null;
   await connectDB();
-  const hit = await Invite.exists({ customSlug: name, published: true });
-  return hit ? `/i/${name}` : null;
+  const hit = await Invite.findOne({ customSlug: name, published: true }, { premium: 1, createdAt: 1 }).lean();
+  return hit && canShare(hit) ? `/i/${name}` : null;
 }

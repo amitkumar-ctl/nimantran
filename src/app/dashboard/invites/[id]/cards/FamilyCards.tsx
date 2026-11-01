@@ -10,7 +10,8 @@ import type { PersonalEntry } from '@/lib/validation';
 import type { PersonalInviteData } from '@/lib/types';
 import { sharePath } from '@/lib/links';
 import { ApiError } from '@/lib/api-client';
-import { PremiumOffer, usePlan } from '@/components/premium/Upgrade';
+import { PremiumOffer, UpgradeButton, useCanShare, usePlan } from '@/components/premium/Upgrade';
+import { rupees } from '@/lib/payments/plan';
 
 const noSubscribe = () => () => {};
 const useOrigin = () => useSyncExternalStore(noSubscribe, () => window.location.origin, () => '');
@@ -31,6 +32,8 @@ export function FamilyCards({ id }: { id: string }) {
   const origin = useOrigin();
   const invite = useQuery({ queryKey: queryKeys.invite(id), queryFn: () => api.getInvite(id) });
   const plan = usePlan();
+  const shareable = useCanShare(invite.data);
+  const sample = shareable === false; // unpaid: one watermarked sample card, nothing to send
   const families = useQuery({ queryKey: queryKeys.personal(id), queryFn: () => api.listPersonal(id) });
   const [text, setText] = useState('');
   const [note, setNote] = useState('');
@@ -60,8 +63,8 @@ export function FamilyCards({ id }: { id: string }) {
   const inv = invite.data;
   if (!inv) return <div className="container-page py-10"><div className="card h-96 animate-pulse" /></div>;
   const base = `${origin}${sharePath(inv)}`;
-  // Free invites get a few cards while payments are on; Premium is unlimited.
-  const limit = plan?.enabled && !inv.premium ? plan.freeFamilyCards : Infinity;
+  // Unpaid invites get a sample card while payments are on; Premium is unlimited.
+  const limit = sample && plan ? plan.freeFamilyCards : Infinity;
   const left = Math.max(0, limit - list.length);
   const needsPremium = add.isError && add.error instanceof ApiError && add.error.status === 402;
   const linkFor = (name: string) => `${base}?to=${encodeURIComponent(name)}`;
@@ -79,7 +82,16 @@ export function FamilyCards({ id }: { id: string }) {
       <h1 className="font-display text-4xl font-semibold text-maroon-900">Family cards</h1>
       <p className="max-w-2xl text-muted">Invite each family personally. Their link opens your invite addressed to them by name (“Respected Sharma Parivar”, in your invite’s language), and you get a card with their name on it to send on WhatsApp.</p>
 
-      {!inv.published ? (
+      {sample && (
+        <div className="mt-6 flex max-w-3xl flex-wrap items-center gap-4 rounded-2xl border-2 border-gold bg-white p-5">
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-ink">Try it with one family</p>
+            <p className="text-sm text-muted">Your invite isn’t published yet, so you can make {limit === 1 ? 'one sample card' : `${limit} sample cards`} to see how it looks. Publish with Premium to send a card and a personal link to every family.</p>
+          </div>
+          <UpgradeButton inviteId={id} className="btn btn-primary">Publish with Premium · {plan ? rupees(plan.price) : ''}</UpgradeButton>
+        </div>
+      )}
+      {!inv.published && !sample ? (
         <div className="card mt-6 max-w-xl p-6">
           <p className="flex items-start gap-2 font-semibold text-ink"><AlertTriangle className="mt-0.5 h-5 w-5 flex-none text-amber-600" /> Publish your invite first</p>
           <p className="mt-1 text-sm text-muted">Each family’s card and link open your live invite, so family cards become available once it’s published. Your saved families are kept.</p>
@@ -98,11 +110,11 @@ export function FamilyCards({ id }: { id: string }) {
             {add.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add {entries.length > 1 ? `${entries.length} families` : 'family'}
           </button>
           {limit !== Infinity && (
-            <p className="mt-2 text-center text-xs text-muted">{list.length} of {limit} free family cards used</p>
+            <p className="mt-2 text-center text-xs text-muted">{list.length} of {limit} sample {limit === 1 ? 'card' : 'cards'} used</p>
           )}
           {limit !== Infinity && (left === 0 || needsPremium) && (
             <div className="mt-4">
-              <PremiumOffer inviteId={id} compact reason={left === 0 ? `You’ve used all ${limit} free family cards. Premium lets you send one to every family.` : 'Premium lets you send a card to every family.'} />
+              <PremiumOffer inviteId={id} compact reason={left === 0 ? `That’s your free sample. Publish with Premium to add every family and send their cards.` : 'Premium lets you send a card to every family.'} />
             </div>
           )}
         </section>
@@ -153,10 +165,14 @@ export function FamilyCards({ id }: { id: string }) {
                   )}
                   {editing?.id !== f.id && (
                     <div className="flex w-full flex-wrap gap-1.5 sm:w-auto sm:flex-none">
-                      <button type="button" className="btn btn-outline btn-sm" onClick={() => setCard(f)}><ImageIcon className="h-4 w-4" /> Card</button>
-                      <a href={whatsappUrl(f.phone, familyMessage(inv, f.name, linkFor(f.name)))} target="_blank" rel="noopener noreferrer" onClick={() => markSent(f)}
-                        className="btn btn-sm bg-[#25D366] text-white"><Share2 className="h-4 w-4" /> WhatsApp</a>
-                      <button type="button" className="btn btn-ghost btn-sm px-2" onClick={() => copy(f)} aria-label={`Copy ${f.name}’s link`}>{copied === f.id ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}</button>
+                      <button type="button" className="btn btn-outline btn-sm" onClick={() => setCard(f)}><ImageIcon className="h-4 w-4" /> {sample ? 'Sample card' : 'Card'}</button>
+                      {!sample && (
+                        <>
+                          <a href={whatsappUrl(f.phone, familyMessage(inv, f.name, linkFor(f.name)))} target="_blank" rel="noopener noreferrer" onClick={() => markSent(f)}
+                            className="btn btn-sm bg-[#25D366] text-white"><Share2 className="h-4 w-4" /> WhatsApp</a>
+                          <button type="button" className="btn btn-ghost btn-sm px-2" onClick={() => copy(f)} aria-label={`Copy ${f.name}’s link`}>{copied === f.id ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}</button>
+                        </>
+                      )}
                       <button type="button" className="btn btn-ghost btn-sm px-2" onClick={() => setEditing({ id: f.id, name: f.name, phone: f.phone })} aria-label={`Edit ${f.name}`}><Pencil className="h-4 w-4" /></button>
                       <button type="button" className="btn btn-ghost btn-sm px-2 text-red-700" onClick={() => confirm(`Remove ${f.name}?`) && remove.mutate(f.id)} aria-label={`Remove ${f.name}`}><Trash2 className="h-4 w-4" /></button>
                     </div>
@@ -171,7 +187,7 @@ export function FamilyCards({ id }: { id: string }) {
 
       )}
 
-      {card && <FamilyCardDialog invite={inv} family={card.name} link={linkFor(card.name)} onClose={() => setCard(null)} onSent={() => markSent(card)} />}
+      {card && <FamilyCardDialog invite={inv} family={card.name} link={linkFor(card.name)} sample={sample} onClose={() => setCard(null)} onSent={() => markSent(card)} />}
     </div>
   );
 }

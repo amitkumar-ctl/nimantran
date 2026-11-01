@@ -64,7 +64,7 @@ export default function TemplatesPage() {
 
       <div className="mt-16 rounded-3xl bg-maroon-900 p-8 text-center text-cream sm:p-12">
         <p className="font-display text-3xl font-semibold text-gold-200">Found one you love?</p>
-        <p className="mt-2 text-cream/80">Create your invite free. You can try every design on your own names before sharing.</p>
+        <p className="mt-2 text-cream/80">Design your invite free. You can try every design on your own names before you publish.</p>
         <Link href="/signup" className="btn mt-6 bg-gold-200 text-maroon-900">Start with any design</Link>
       </div>
     </main>

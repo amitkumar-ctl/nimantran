@@ -7,13 +7,14 @@ export type InviteData = InviteContent & {
   slug: string;
   published: boolean;
   updatedAt: string;
+  createdAt: string;
   /** Paid for Premium (custom link, no footer, unlimited family cards, guest list download). */
   premium: boolean;
   /** Premium short name: getnimantran.com/<customSlug>. '' when not chosen. */
   customSlug: string;
 };
 
-export type InviteSummary = Pick<InviteData, 'id' | 'slug' | 'published' | 'partner1' | 'partner2' | 'weddingDate' | 'theme' | 'updatedAt' | 'rsvpEnabled' | 'premium' | 'customSlug'> & {
+export type InviteSummary = Pick<InviteData, 'id' | 'slug' | 'published' | 'partner1' | 'partner2' | 'weddingDate' | 'theme' | 'updatedAt' | 'rsvpEnabled' | 'premium' | 'customSlug' | 'createdAt'> & {
   rsvpCount: number;
 };
 

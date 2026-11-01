@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
+import { HeroPlanChip, HomePricing } from '@/components/marketing/PlanBits';
 import Link from 'next/link';
 import { CalendarHeart, IndianRupee, MapPin, MessageCircleHeart, Pencil, Share2, Sparkles, Timer, Users } from 'lucide-react';
 import { site, absoluteUrl } from '@/config/site';
@@ -38,6 +40,7 @@ const FAQ = [
   { q: 'How do guests reply to the invitation?', a: 'Guests open your link, enter their name, choose whether they are attending, how many people are coming and which functions they will join. You see every response instantly in your guest list and can download it as an Excel-compatible CSV file.' },
   { q: 'Can I edit the invitation after sharing it?', a: 'Yes. Change venues, timings or add a function anytime. Everyone who opens the same link sees the latest details, with no need to resend anything.' },
   { q: 'Is my wedding invitation private?', a: 'Your invite is only visible to people who have the link. Invitation pages are hidden from Google and other search engines, and the link contains a random code so it cannot be guessed.' },
+  { q: 'How much does it cost?', a: 'Designing your invite and previewing it is free. To share it with guests, you publish it with Premium: a one-time payment for your wedding, which also adds your own short link, family cards for everyone and the guest list download. See the Pricing page for the current price. Full refund within 7 days.' },
   { q: 'Can guests send shagun online?', a: 'Yes. Add your UPI ID and guests get a “Send Shagun” button that opens Google Pay, PhonePe, Paytm or any UPI app on their phone. Money goes directly to your account; we never touch it.' },
 ];
 
@@ -70,7 +73,7 @@ export default function HomePage() {
         <div className="container-page relative grid items-center gap-12 pt-20 pb-12 sm:pt-24 sm:pb-16 lg:grid-cols-[1.1fr_1fr] lg:pt-28 lg:pb-24">
           <div className="animate-fade-up">
             <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1 text-xs font-semibold text-maroon">
-              <Diya className="h-4 w-4" /> Free to create · Ready in 5 minutes
+              <Diya className="h-4 w-4" /> <Suspense fallback="Ready in 5 minutes"><HeroPlanChip /></Suspense>
             </p>
             <h1 className="font-display text-5xl font-semibold leading-[1.05] text-maroon-900 sm:text-6xl lg:text-7xl">
               Your wedding invitation, <span className="font-script font-normal text-gold">beautifully</span> online
@@ -80,7 +83,7 @@ export default function HomePage() {
               in one WhatsApp message.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/signup" className="btn btn-primary btn-shine animate-glow px-7 py-4 text-base">Create your invite free</Link>
+              <Link href="/signup" className="btn btn-primary btn-shine animate-glow px-7 py-4 text-base">Start designing free</Link>
               <Link href="/templates" className="btn btn-outline px-7 py-4 text-base">See designs</Link>
             </div>
             <p className="mt-4 text-sm text-muted">No app for guests · Edit anytime · Works on every phone</p>
@@ -143,6 +146,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <Suspense fallback={null}><HomePricing /></Suspense>
+
       {/* ── FAQ ── */}
       <section id="faq" className="container-page max-w-3xl py-16" aria-labelledby="faq-title">
         <h2 id="faq-title" className="text-center font-display text-4xl font-semibold text-maroon-900 sm:text-5xl">Questions couples ask</h2>
@@ -165,8 +170,8 @@ export default function HomePage() {
           <Garland swags={6} className="opacity-90" />
           <Petals count={10} />
           <h2 className="relative mt-4 font-display text-4xl font-semibold text-gold-200 sm:text-5xl">Start your invitation today</h2>
-          <p className="relative mx-auto mt-3 max-w-xl text-cream/80">It’s free to create and takes about five minutes. Your guests will love it.</p>
-          <Link href="/signup" className="btn btn-shine animate-glow relative mt-8 bg-gold-200 px-8 py-4 text-base text-maroon-900 hover:bg-gold">Create your invite free</Link>
+          <p className="relative mx-auto mt-3 max-w-xl text-cream/80">Design it free in about five minutes, and publish it when it’s ready. Your guests will love it.</p>
+          <Link href="/signup" className="btn btn-shine animate-glow relative mt-8 bg-gold-200 px-8 py-4 text-base text-maroon-900 hover:bg-gold">Start designing free</Link>
         </div>
       </section>
     </main>

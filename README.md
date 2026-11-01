@@ -121,7 +121,7 @@ API (route handlers in `src/app/api`): `auth/{signup,login,google,logout,me}`,
 
 ## Payments (Premium, Razorpay)
 
-Off by default. Premium is a one-time payment per invite that adds a short link (`getnimantran.com/amit-nikita`), removes the "Made with Nimantran" footer, and unlocks unlimited family cards (free: 5) and the guest list download. With `PAYMENTS_ENABLED=false` nothing about Premium is shown and there are no limits.
+Off by default. While on, designing and previewing is free, and an invite must be paid for (Premium, one-time) before it can be published and opened by guests. Premium also adds a short link (`getnimantran.com/amit-nikita`), no "Made with Nimantran" footer, unlimited family cards (unpaid invites get 1 watermarked sample) and the guest list download. Each account can have one invite. Invites created before `PAYWALL_START` (default 1 Nov 2026, IST) stay live for free with their old limits. With `PAYMENTS_ENABLED=false` nothing about Premium is shown and there are no limits.
 
 To switch it on:
 1. Activate your Razorpay account (KYC). Razorpay checks that the site has Pricing, Terms, Privacy, Refund policy and Contact pages: all exist.
@@ -130,7 +130,7 @@ To switch it on:
 4. Set `PAYMENTS_ENABLED=true` (and `PREMIUM_PRICE_PAISE` / `PREMIUM_MRP_PAISE`), then redeploy.
 5. Make one test payment with the test keys (Razorpay's test UPI ID `success@razorpay` works), then swap in live keys.
 
-Refunds: issue them in the Razorpay dashboard; the webhook switches the invite back to free (its short link keeps redirecting).
+Refunds: issue them in the Razorpay dashboard; the webhook takes Premium away and unpublishes the invite (it goes back to a private draft).
 
 ## Security notes
 

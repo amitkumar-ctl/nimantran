@@ -22,7 +22,7 @@ export async function GET(req: Request, ctx: RouteContext<'/api/invites/[id]/rsv
   const { id } = await ctx.params;
   if (!validId(id)) return error('Invite not found', 404);
 
-  const invite = await Invite.findOne({ _id: id, owner: auth.userId }, { slug: 1, partner1: 1, partner2: 1, premium: 1 }).lean();
+  const invite = await Invite.findOne({ _id: id, owner: auth.userId }, { slug: 1, partner1: 1, partner2: 1, premium: 1, createdAt: 1 }).lean();
   if (!invite) return error('Invite not found', 404);
 
   const rows = await Rsvp.find({ invite: invite._id }).sort({ createdAt: -1 }).lean();

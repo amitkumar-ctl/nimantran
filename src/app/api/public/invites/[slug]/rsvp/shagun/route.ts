@@ -1,4 +1,5 @@
 import { connectDB } from '@/lib/db';
+import { canShare } from '@/lib/payments/config';
 import { Invite } from '@/lib/models/Invite';
 import { Rsvp } from '@/lib/models/Rsvp';
 import { Shagun } from '@/lib/models/Shagun';
@@ -26,7 +27,8 @@ export async function POST(req: Request, ctx: Ctx) {
 
   const { slug } = await ctx.params;
   await connectDB();
-  const invite = await Invite.findOne({ slug, published: true }, { _id: 1, owner: 1 }).lean();
+  const found = await Invite.findOne({ slug, published: true }, { _id: 1, owner: 1, premium: 1, createdAt: 1 }).lean();
+  const invite = found && canShare(found) ? found : null; // unpaid invites aren't open to guests
   if (!invite) return error('This invitation is no longer available', 404);
   const session = await getSession();
   if (session && String(invite.owner) === session.userId) {
